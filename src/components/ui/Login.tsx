@@ -12,7 +12,6 @@ export function FieldInput() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-lg border">
-        
         <FieldSet>
           <FieldGroup className="space-y-6">
             <Field>
@@ -25,7 +24,6 @@ export function FieldInput() {
             </Field>
           </FieldGroup>
         </FieldSet>
-
         <Button className="w-full mt-6">
           Login
         </Button>
