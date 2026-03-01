@@ -18,16 +18,9 @@ export function FieldInput() {
             <Field>
               <FieldLabel htmlFor="username">Username</FieldLabel>
               <Input id="username" type="text" placeholder="xnxx" />
-              <FieldDescription>
-                Choose a unique username for your account.
-              </FieldDescription>
             </Field>
-
             <Field>
               <FieldLabel htmlFor="password">Password</FieldLabel>
-              <FieldDescription>
-                Must be at least 8 characters long.
-              </FieldDescription>
               <Input id="password" type="password" placeholder="••••••••" />
             </Field>
           </FieldGroup>
