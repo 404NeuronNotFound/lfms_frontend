@@ -56,10 +56,16 @@ function App() {
           </p>
 
           <div className="flex gap-4 mt-8">
-            <Button size="lg" className="bg-gradient-to-r from-blue-500 to-purple-600">
+            <Button
+              size="lg"
+              className="bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 transition font-semibold cursor-pointer"
+            >
               Report Lost Item
             </Button>
-            <Button size="lg" variant="outline">
+            <Button
+              size="lg"
+              className="bg-white/20 backdrop-blur-md border border-white/40 text-white hover:bg-white hover:text-black transition font-semibold cursor-pointer"
+            >
               Browse Found Items
             </Button>
           </div>
@@ -130,7 +136,7 @@ function App() {
               key={i}
               whileHover={{ scale: 1.05 }}
             >
-              <Card className="bg-white/5 border border-white/10 rounded-2xl">
+              <Card className="relative bg-white/10 backdrop-blur-2xl border border-white/20 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.37)] before:absolute before:inset-0 before:rounded-3xl before:border before:border-white/10 before:pointer-events-none">
                 <CardContent className="p-8 space-y-4">
                   {item.icon}
                   <h3 className="text-xl font-semibold">{item.title}</h3>
@@ -168,14 +174,17 @@ function App() {
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
             Ready to Reconnect Lost Items?
           </h2>
-          <Button size="lg" className="bg-white text-black hover:bg-gray-200">
+          <Button
+            size="lg"
+            className="bg-white/20 backdrop-blur-md border border-white/40 text-white hover:bg-white hover:text-black transition font-semibold cursor-pointer"
+          >
             Join the Community
           </Button>
         </div>
       </section>
 
       {/* FOOTER */}
-      <footer className="border-t border-white/10 py-12 px-6">
+      <footer className="border-t border-white/10 bg-white/5 backdrop-blur-xl py-12 px-6">
         <div className="container mx-auto grid md:grid-cols-4 gap-8 text-gray-400 text-sm">
           <div>
             <h3 className="text-white font-semibold mb-4">
