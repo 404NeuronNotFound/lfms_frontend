@@ -10,100 +10,110 @@ export function Navbar() {
 
   return (
     <motion.nav
-      initial={{ y: -60, opacity: 0 }}
+      initial={{ y: -40, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6 }}
-      className="w-full border-b bg-white/95 backdrop-blur sticky top-0 z-50"
+      className="fixed top-0 left-0 w-full z-50 px-4 md:px-8 pt-4"
     >
-      <div className="container mx-auto flex h-16 items-center justify-between px-4">
+      <div className="max-w-7xl mx-auto">
 
-        {/* Logo */}
-        <div className="flex items-center gap-2">
-          <Search className="h-6 w-6 text-black" />
-          <span className="text-lg font-semibold text-black hidden sm:block">
-            Lost & Found Management System
-          </span>
-        </div>
+        {/* Glass Container */}
+        <div className="relative flex items-center justify-between h-16 px-6 rounded-2xl 
+          bg-white/10 backdrop-blur-2xl 
+          border border-white/20 
+          shadow-[0_8px_32px_rgba(0,0,0,0.37)]">
 
-        {/* Desktop Menu */}
-        <div className="hidden md:flex items-center gap-8">
-
-          {["Home", "About"].map((item) => (
-            <motion.a
-              key={item}
-              href="#"
-              className="relative text-sm font-medium text-black"
-              whileHover={{ y: -2 }}
-            >
-              {item}
-              <span className="absolute left-0 -bottom-1 h-[2px] w-0 bg-black transition-all duration-300 group-hover:w-full" />
-            </motion.a>
-          ))}
-
-          <Button
-            variant="outline"
-            className="text-black border-black hover:bg-black hover:text-white transition"
-          >
-            Login
-          </Button>
-
-          <Button className="bg-black text-white hover:bg-gray-800">
-            Register
-          </Button>
-        </div>
-
-        {/* Mobile Toggle */}
-        <motion.button
-          whileTap={{ scale: 0.9 }}
-          className="md:hidden text-black"
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          {isOpen ? <X /> : <Menu />}
-        </motion.button>
-      </div>
-
-      {/* Mobile Menu Animated */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.4 }}
-            className="md:hidden border-t bg-white overflow-hidden"
-          >
-            <div className="px-4 py-6 space-y-5">
-
-              {["Home", "About"].map((item) => (
-                <motion.a
-                  key={item}
-                  href="#"
-                  initial={{ x: -20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ duration: 0.3 }}
-                  className="block text-black text-sm font-medium"
-                >
-                  {item}
-                </motion.a>
-              ))}
-
-              <div className="flex flex-col gap-3 pt-4">
-                <Button
-                  variant="outline"
-                  className="w-full text-black border-black"
-                >
-                  Login
-                </Button>
-
-                <Button className="w-full bg-black text-white">
-                  Register
-                </Button>
-              </div>
-
+          {/* Logo */}
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-white/20 backdrop-blur-md">
+              <Search className="h-5 w-5 text-white" />
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+
+            <span className="text-sm md:text-base font-semibold text-white tracking-wide">
+              Lost & Found Management System
+            </span>
+          </div>
+
+          {/* Desktop Menu */}
+          <div className="hidden md:flex items-center gap-8">
+
+            {["Home", "About"].map((item) => (
+              <motion.a
+                key={item}
+                href="#"
+                whileHover={{ y: -2 }}
+                className="relative text-sm font-medium text-gray-200 hover:text-white transition"
+              >
+                {item}
+                <span className="absolute left-0 -bottom-1 w-0 h-[2px] bg-gradient-to-r from-blue-400 to-purple-500 transition-all duration-300 hover:w-full"></span>
+              </motion.a>
+            ))}
+
+            <Button
+                size="lg"
+                className="bg-white text-black border border-white/30 hover:bg-gray-500 hover:text-black transition font-semibold cursor-pointer"
+                >
+                Login
+            </Button>
+
+            <Button className="bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:opacity-90 transition shadow-lg cursor-pointer font-semibold">
+              Register
+            </Button>
+          </div>
+
+          {/* Mobile Toggle */}
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            className="md:hidden text-white"
+            onClick={() => setIsOpen(!isOpen)}
+          >
+            {isOpen ? <X /> : <Menu />}
+          </motion.button>
+        </div>
+
+        {/* Mobile Glass Menu */}
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 10 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+              className="md:hidden mt-4 rounded-2xl bg-white/10 backdrop-blur-2xl border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.37)] overflow-hidden"
+            >
+              <div className="px-6 py-6 space-y-5">
+
+                {["Home", "About"].map((item) => (
+                  <motion.a
+                    key={item}
+                    href="#"
+                    initial={{ x: -20, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                    className="block text-gray-200 hover:text-white text-sm font-medium"
+                  >
+                    {item}
+                  </motion.a>
+                ))}
+
+                <div className="flex flex-col gap-3 pt-4">
+                    <Button
+                        size="lg"
+                        className="w-full border-white/30 text-white hover:bg-white hover:text-black transition font-semibold">
+                        Login
+                    </Button>
+
+                  <Button className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white cursor-pointer hover:opacity-90 transition font-semibold shadow-lg">
+                    Register
+                  </Button>
+                </div>
+
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+      </div>
     </motion.nav>
   )
 }
