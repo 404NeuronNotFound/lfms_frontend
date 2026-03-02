@@ -6,7 +6,7 @@ import {
   FieldSet,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { Button } from "./button"
+import { Button } from "./ui/button"
 import { useAuthStore } from "@/store/authStore"
 
 export function FieldInput() {

@@ -1,10 +1,14 @@
 
-import { FieldInput } from "@/components/ui/Login"
+import { FieldInput } from "@/components/Login"
+import Sidebar from "@/components/Sidebar"
+
+
 
 
 function App() {
   return (
     <>
+        <Sidebar children={undefined} />
         <FieldInput/>
     </>
   )
