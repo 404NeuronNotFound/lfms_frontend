@@ -266,8 +266,8 @@ export default function App() {
             <div style={{ display: "flex", gap: 32, alignItems: "center" }} className="hidden-mobile">
               {NAV_ITEMS.map(item => (
                 <a key={item} href={`#${item.toLowerCase().replace(" ", "-")}`} style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", textDecoration: "none", transition: "color 0.2s" }}
-                  onMouseEnter={e => e.target.style.color = "white"}
-                  onMouseLeave={e => e.target.style.color = "rgba(255,255,255,0.6)"}
+                  onMouseEnter={e => (e.target as HTMLElement).style.color = "white"}
+                  onMouseLeave={e => (e.target as HTMLElement).style.color = "rgba(255,255,255,0.6)"}
                 >{item}</a>
               ))}
             </div>
@@ -555,8 +555,16 @@ export default function App() {
                   background: p.highlight ? "linear-gradient(135deg,#6366f1,#8b5cf6)" : "rgba(255,255,255,0.06)",
                   color: "white", transition: "all 0.3s ease"
                 }}
-                  onMouseEnter={e => { e.target.style.transform = "translateY(-2px)"; e.target.style.boxShadow = p.highlight ? "0 12px 24px rgba(99,102,241,0.4)" : "none" }}
-                  onMouseLeave={e => { e.target.style.transform = "none"; e.target.style.boxShadow = "none" }}>
+                  onMouseEnter={e => {
+                    const target = e.target as HTMLElement;
+                    target.style.transform = "translateY(-2px)";
+                    target.style.boxShadow = p.highlight ? "0 12px 24px rgba(99,102,241,0.4)" : "none";
+                  }}
+                  onMouseLeave={e => {
+                    const target = e.target as HTMLElement;
+                    target.style.transform = "none";
+                    target.style.boxShadow = "none";
+                  }}>
                   {p.cta}
                 </button>
               </motion.div>
@@ -641,8 +649,8 @@ export default function App() {
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                   {col.links.map(link => (
                     <a key={link} href="#" style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", textDecoration: "none", transition: "color 0.2s" }}
-                      onMouseEnter={e => e.target.style.color = "white"}
-                      onMouseLeave={e => e.target.style.color = "rgba(255,255,255,0.35)"}
+                      onMouseEnter={e => (e.target as HTMLElement).style.color = "white"}
+                      onMouseLeave={e => (e.target as HTMLElement).style.color = "rgba(255,255,255,0.35)"}
                     >{link}</a>
                   ))}
                 </div>
@@ -659,7 +667,7 @@ export default function App() {
   )
 }
 
-function FAQItem({ faq, i }) {
+function FAQItem({ faq, i }: { faq: { q: string; a: string }; i: number }) {
   const [open, setOpen] = useState(false)
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.06 }}
