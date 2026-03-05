@@ -11,9 +11,9 @@ interface AuthState {
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
-  user: null,
-  role: null,
-  access: null,
+  user: localStorage.getItem("user"),  
+  role: localStorage.getItem("role"),
+  access: localStorage.getItem("access"),
   loading: false,
 
   login: async (username, password) => {
@@ -25,6 +25,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       localStorage.setItem("access", data.access)
       localStorage.setItem("refresh", data.refresh)
       localStorage.setItem("role", data.role)
+      localStorage.setItem("user", data.username) 
 
       set({
         user: data.username,
@@ -47,6 +48,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   logout: () => {
     localStorage.removeItem("access")
     localStorage.removeItem("refresh")
+    localStorage.removeItem("role")
+    localStorage.removeItem("user")
 
     set({
       user: null,

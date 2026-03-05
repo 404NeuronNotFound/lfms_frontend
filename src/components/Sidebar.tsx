@@ -102,11 +102,14 @@ interface NavGroup {
   items: NavItem[]
 }
 
+interface SidebarProps {
+  collapsed: boolean
+  setCollapsed: (v: boolean) => void
+}
 
 
-export function Sidebar() {
+export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
   const { user, role, logout } = useAuthStore()
-  const [collapsed, setCollapsed]   = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [activeHref, setActiveHref] = useState(
     typeof window !== "undefined" ? window.location.pathname : ""
@@ -161,7 +164,7 @@ export function Sidebar() {
         {!isMobile && (
           <motion.button
             whileTap={{ scale: 0.9 }}
-            onClick={() => setCollapsed(v => !v)}
+            onClick={() => setCollapsed(!collapsed)}
             style={{
               background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)",
               borderRadius: 8, width: 28, height: 28, display: "flex", alignItems: "center",
@@ -468,7 +471,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "#06060f", color: "white" }}>
-      <Sidebar />
+      <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
       <main style={{
         flex: 1,
         marginLeft: isMobile ? 0 : (collapsed ? 64 : 240),
