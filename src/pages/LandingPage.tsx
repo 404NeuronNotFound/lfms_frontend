@@ -1,5 +1,6 @@
 
 "use client"
+import { useNavigate } from "react-router-dom"
 import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import {
@@ -19,6 +20,7 @@ function useIsMobile() {
 }
 
 const NAV_ITEMS = ["Features", "How It Works", "Pricing", "Testimonials"]
+
 
 const STATS = [
   { value: "24K+", label: "Items Recovered" },
@@ -86,6 +88,7 @@ export default function LandingPage() {
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] })
   const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"])
   const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0])
+  const navigate = useNavigate() 
 
   useEffect(() => { if (!isMobile) setMenuOpen(false) }, [isMobile])
 
@@ -159,7 +162,7 @@ export default function LandingPage() {
             {!isMobile ? (
               <div style={{ display: "flex", gap: 10 }}>
                 
-                <button className="btn-secondary" style={{ padding: "8px 18px", borderRadius: 10, fontSize: 14, fontWeight: 500, color: "white", cursor: "pointer" }}>Login</button>
+                <button className="btn-secondary" onClick={() => navigate("/login")} style={{ padding: "8px 18px", borderRadius: 10, fontSize: 14, fontWeight: 500, color: "white", cursor: "pointer" }}>Login</button>
                 <button className="btn-primary" style={{ padding: "8px 18px", borderRadius: 10, fontSize: 14, fontWeight: 600, color: "white", border: "none", cursor: "pointer" }}>Get Started</button>
               </div>
             ) : (
