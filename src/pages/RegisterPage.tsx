@@ -103,7 +103,7 @@ export default function RegisterPage() {
   const isMobile = useIsMobile()
 
   const [form, setForm] = useState({
-    first_name: "", last_name: "", username: "", email: "", password: "",
+    first_name: "", last_name: "", username: "", email: "", password: "", confirm_password: "",
   })
   const [showPass, setShowPass] = useState(false)
   const [touched,  setTouched]  = useState<Record<string, boolean>>({})
@@ -120,7 +120,7 @@ export default function RegisterPage() {
   const canSubmit = !!(
     form.first_name && form.last_name &&
     form.username && form.email && emailValid &&
-    form.password && passStrong
+    form.password && passStrong && form.confirm_password === form.password
   )
 
   const handleSubmit = async () => {
@@ -474,6 +474,25 @@ export default function RegisterPage() {
                     </span>
                   </motion.div>
                 )}
+
+                <Field
+                  id="confirm_password" label="Confirm Password" placeholder="Min. 6 characters"
+                  type={showPass ? "text" : "password"} icon={Lock}
+                  value={form.confirm_password} onChange={setField("confirm_password")} onBlur={touch("confirm_password")}
+                  fieldError={
+                    touched.confirm_password && !form.confirm_password ? "Required" :
+                    touched.confirm_password && form.confirm_password !== form.password ? "Passwords do not match" : undefined
+                  }
+                  right={
+                    <button
+                      type="button"
+                      onClick={() => setShowPass(v => !v)}
+                      style={{ background:"none", border:"none", cursor:"pointer", color:"#6b7280", display:"flex", alignItems:"center", padding:0 }}
+                    >
+                      {showPass ? <EyeOff size={15} color="#9ca3af" /> : <Eye size={15} color="#9ca3af" />}
+                    </button>
+                  }
+                />
               </div>
 
               {/* Submit button */}
