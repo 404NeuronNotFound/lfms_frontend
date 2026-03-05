@@ -8,6 +8,7 @@ import AdminDashboard from "./pages/admin/Dashboard"
 import AdminLayout from "./layouts/AdminLayout"
 
 import UserDashboard from "./pages/user/Dashboard"
+import UserLayout from "./layouts/UserLayout"
 
 
 
@@ -28,7 +29,9 @@ export default function App() {
         </Route>
 
         <Route element={<ProtectedRoute allowedRole="USER" />}>
-          <Route path="/user-dashboard" element={<UserDashboard />} />
+          <Route element={<UserLayout />}>
+            <Route path="/user-dashboard" element={<UserDashboard />} />\
+          </Route>
         </Route>
       </Routes>
 
