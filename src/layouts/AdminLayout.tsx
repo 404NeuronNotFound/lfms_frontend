@@ -6,7 +6,7 @@ export default function AdminLayout() {
   const [collapsed, setCollapsed] = useState(false)
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#c9c7c7" }}>
+    <div style={{ display: "flex", minHeight: "100vh", background: "#06060f" }}>
       <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
       <main style={{
         flex: 1,
