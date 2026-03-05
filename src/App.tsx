@@ -4,6 +4,8 @@ import LoginPage from "@/pages/Login"
 import ProtectedRoute from "./routes/ProtectedRoutes"
 import GuestRoute from "./routes/GuestRoute"
 import AdminDashboard from "./pages/admin/Dashboard"
+import AdminLayout from "./layouts/AdminLayout"
+
 import UserDashboard from "./pages/user/Dashboard"
 
 
@@ -18,7 +20,9 @@ export default function App() {
         </Route>
 
         <Route element={<ProtectedRoute allowedRole="ADMIN" />}>
-          <Route path="/admin-dashboard" element={<AdminDashboard />} />
+          <Route element={<AdminLayout />}>
+            <Route path="/admin-dashboard" element={<AdminDashboard />} />
+          </Route>
         </Route>
 
         <Route element={<ProtectedRoute allowedRole="USER" />}>
