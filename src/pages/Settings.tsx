@@ -201,7 +201,16 @@ export default function SettingsPage() {
 
 
   const handleSaveProfile = async () => {
-    await saveProfile({ ...profileForm })
+    await saveProfile({
+      first_name: profileForm.first_name,
+      last_name: profileForm.last_name,
+      email: profileForm.email,
+      profile: {
+        phone_number: profileForm.phone,
+        address: profileForm.address,
+        bio: profileForm.bio,
+      },
+    })
   }
 
   const handleChangePassword = async () => {

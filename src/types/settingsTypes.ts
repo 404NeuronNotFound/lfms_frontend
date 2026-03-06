@@ -23,9 +23,12 @@ export interface UpdateProfilePayload {
   first_name: string
   last_name: string
   email: string
-  phone?: string
-  address?: string
-  bio?: string
+  profile: {
+    phone_number?: string
+    address?: string
+    bio?: string
+    avatar?: string
+  }
 }
 
 export interface UpdateProfileResponse {
