@@ -34,7 +34,7 @@ export async function getProfile(): Promise<UserProfile> {
 
 
 export async function updateProfile(payload: UpdateProfilePayload): Promise<UpdateProfileResponse> {
-  const res = await fetch(`${BASE}/profile`, {
+  const res = await fetch(`${BASE}/profile/`, {
     method: "PATCH",
     headers: authHeaders(),
     body: JSON.stringify(payload),

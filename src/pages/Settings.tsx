@@ -9,7 +9,6 @@ import {
   Smartphone, Globe, Key, LogOut, X,
 } from "lucide-react"
 
-// ── Section tab config ────────────────────────────────────────────────────
 const TABS = [
   { id: "profile",       label: "Profile",       icon: User     },
   { id: "security",      label: "Security",      icon: Shield   },
@@ -17,7 +16,7 @@ const TABS = [
   { id: "danger",        label: "Danger Zone",   icon: Trash2   },
 ]
 
-// ── Small reusable components ─────────────────────────────────────────────
+
 function SectionCard({ title, desc, children }: { title: string; desc?: string; children: React.ReactNode }) {
   return (
     <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 18, padding: "26px 28px", marginBottom: 16 }}>
@@ -112,7 +111,7 @@ function SaveButton({ loading, label = "Save Changes", onClick }: { loading: boo
   )
 }
 
-// ── MAIN COMPONENT ────────────────────────────────────────────────────────
+
 export default function SettingsPage() {
   const { user, role, logout } = useAuthStore()
   const {
@@ -125,12 +124,12 @@ export default function SettingsPage() {
   const [isMobile, setIsMobile]   = useState(false)
   const [showTabMenu, setShowTabMenu] = useState(false)
 
-  // ── Profile form ──
+
   const [profileForm, setProfileForm] = useState({
-    first_name: "", last_name: "", email: "", phone: "", location: "", bio: "",
+    first_name: "", last_name: "", email: "", phone: "", address: "", bio: "",
   })
 
-  // ── Password form ──
+ 
   const [passForm, setPassForm] = useState({
     current_password: "", new_password: "", confirm_new_password: "",
   })
@@ -139,20 +138,20 @@ export default function SettingsPage() {
   const [showConfirm, setShowConfirm]   = useState(false)
   const [passLocalErr, setPassLocalErr] = useState("")
 
-  // ── Notifications ──
+
   const [notifs, setNotifs] = useState({
     notifications_email: true,
     notifications_push:  true,
     notifications_sms:   false,
   })
 
-  // ── Danger zone ──
+
   const [deletePassword,  setDeletePassword]  = useState("")
   const [deleteConfirm,   setDeleteConfirm]   = useState(false)
   const [showDeletePass,  setShowDeletePass]  = useState(false)
   const [deleteError,     setDeleteError]     = useState("")
 
-  // ── Toast ──
+
   const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null)
 
   useEffect(() => {
@@ -163,16 +162,16 @@ export default function SettingsPage() {
 
   useEffect(() => { fetchProfile() }, [])
 
-  // Hydrate form from profile
+
   useEffect(() => {
     if (profile) {
       setProfileForm({
         first_name: profile.first_name ?? "",
-        last_name:  profile.last_name  ?? "",
-        email:      profile.email      ?? "",
-        phone:      profile.phone      ?? "",
-        location:   profile.location   ?? "",
-        bio:        profile.bio        ?? "",
+        last_name:  profile.last_name ?? "",
+        email:      profile.email ?? "",
+        phone:      profile.profile.phone_number ?? "",
+        address:    profile.profile.address ?? "",
+        bio:        profile.profile.bio ?? "",
       })
       setNotifs({
         notifications_email: profile.notifications_email ?? true,
@@ -182,7 +181,7 @@ export default function SettingsPage() {
     }
   }, [profile])
 
-  // Show toast on success / error
+
   useEffect(() => {
     if (successMessage) {
       setToast({ msg: successMessage, type: "success" })
@@ -200,7 +199,7 @@ export default function SettingsPage() {
     }
   }, [profileError, passwordError, notifsError])
 
-  // ── Handlers ──
+
   const handleSaveProfile = async () => {
     await saveProfile({ ...profileForm })
   }
@@ -270,7 +269,7 @@ export default function SettingsPage() {
         textarea.settings-input { padding: 11px 14px; resize: vertical; min-height: 80px; line-height: 1.6; }
       `}</style>
 
-      {/* ── Toast ── */}
+ 
       <AnimatePresence>
         {toast && (
           <motion.div
@@ -299,7 +298,6 @@ export default function SettingsPage() {
         )}
       </AnimatePresence>
 
-      {/* ── Page header ── */}
       <motion.div
         initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }}
         style={{ marginBottom: 28 }}>
@@ -312,7 +310,7 @@ export default function SettingsPage() {
               Manage your account, security, and preferences
             </p>
           </div>
-          {/* Role badge */}
+   
           <div style={{
             display: "inline-flex", alignItems: "center", gap: 6,
             padding: "5px 14px", borderRadius: 20,
@@ -327,13 +325,11 @@ export default function SettingsPage() {
         </div>
       </motion.div>
 
-      {/* ── Layout ── */}
       <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "220px 1fr", gap: 20, alignItems: "start" }}>
 
-        {/* ── SIDEBAR TABS ── */}
         <motion.div initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.05 }}>
 
-          {/* Mobile tab picker */}
+     
           {isMobile ? (
             <div style={{ marginBottom: 20 }}>
               <button
@@ -363,9 +359,9 @@ export default function SettingsPage() {
               </AnimatePresence>
             </div>
           ) : (
-            /* Desktop sidebar */
+
             <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 16, padding: 10, position: "sticky", top: 24 }}>
-              {/* Avatar block */}
+ 
               <div style={{ padding: "16px 12px 14px", borderBottom: "1px solid rgba(255,255,255,0.06)", marginBottom: 10 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <div style={{ width: 40, height: 40, borderRadius: "50%", background: "linear-gradient(135deg,#6366f1,#8b5cf6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, flexShrink: 0 }}>
@@ -382,7 +378,7 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              {/* Tabs */}
+
               <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                 {TABS.map(tab => (
                   <button key={tab.id} onClick={() => setActiveTab(tab.id)}
@@ -396,31 +392,20 @@ export default function SettingsPage() {
                   </button>
                 ))}
               </div>
-
-              {/* Logout shortcut */}
-              <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", marginTop: 10, paddingTop: 10 }}>
-                <button onClick={logout}
-                  style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 11, border: "none", background: "transparent", cursor: "pointer", color: "rgba(255,255,255,0.4)", fontFamily: "'DM Sans',sans-serif", fontSize: 14, transition: "all 0.2s" }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(239,68,68,0.08)"; (e.currentTarget as HTMLElement).style.color = "#f87171" }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.4)" }}>
-                  <LogOut size={16} />
-                  <span>Logout</span>
-                </button>
-              </div>
             </div>
           )}
         </motion.div>
 
-        {/* ── MAIN CONTENT ── */}
+
         <AnimatePresence mode="wait">
           <motion.div key={activeTab}
             initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.22 }}>
 
-            {/* ════════════════════ PROFILE TAB ════════════════════ */}
+   
             {activeTab === "profile" && (
               <div>
-                {/* Avatar card */}
+  
                 <SectionCard title="Profile Photo" desc="Your avatar is shown across Findify">
                   <div style={{ display: "flex", alignItems: "center", gap: 20, flexWrap: "wrap" }}>
                     <div style={{ position: "relative", flexShrink: 0 }}>
@@ -445,7 +430,7 @@ export default function SettingsPage() {
                   </div>
                 </SectionCard>
 
-                {/* Personal info */}
+    
                 <SectionCard title="Personal Information" desc="Update your name, email and contact details">
                   {loadingProfile ? (
                     <div style={{ display: "flex", justifyContent: "center", padding: "24px 0" }}>
@@ -467,8 +452,8 @@ export default function SettingsPage() {
                         <FieldInput id="phone" label="Phone Number" placeholder="+63 912 345 6789" icon={Phone}
                           value={profileForm.phone ?? ""} onChange={e => setProfileForm(f => ({ ...f, phone: e.target.value }))}
                           hint="Optional — used for SMS alerts" />
-                        <FieldInput id="location" label="Location / Campus" placeholder="e.g. Main Campus" icon={MapPin}
-                          value={profileForm.location ?? ""} onChange={e => setProfileForm(f => ({ ...f, location: e.target.value }))} />
+                        <FieldInput id="address" label="Location / Campus" placeholder="e.g. Main Campus" icon={MapPin}
+                          value={profileForm.address ?? ""} onChange={e => setProfileForm(f => ({ ...f, address: e.target.value }))} />
                       </div>
 
                       {/* Bio textarea */}
@@ -505,7 +490,7 @@ export default function SettingsPage() {
               </div>
             )}
 
-            {/* ════════════════════ SECURITY TAB ════════════════════ */}
+            
             {activeTab === "security" && (
               <div>
                 <SectionCard title="Change Password" desc="Use a strong password you don't use elsewhere">

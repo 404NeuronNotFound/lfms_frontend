@@ -20,7 +20,6 @@ export const useRegisterStore = create<RegisterState>((set) => ({
     try {
       await registerUser(payload)
       set({ loading: false, success: true })
-      // Redirect to login after short delay (handled in component)
     } catch (err: any) {
       set({ loading: false, error: err.message ?? "Something went wrong" })
       throw err

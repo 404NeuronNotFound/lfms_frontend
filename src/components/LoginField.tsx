@@ -160,7 +160,7 @@ export function LoginField() {
         {/* Register link */}
         <p style={{ textAlign: "center", fontSize: 13, color: "rgba(255,255,255,0.4)" }}>
           Don't have an account?{" "}
-          <a href="#" style={{ color: "#818cf8", fontWeight: 600, textDecoration: "none" }}>Create one</a>
+          <a href="/register" style={{ color: "#818cf8", fontWeight: 600, textDecoration: "none"}}>Create one</a>
         </p>
 
       </div>
