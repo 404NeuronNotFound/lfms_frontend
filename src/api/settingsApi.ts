@@ -28,7 +28,7 @@ async function handleResponse<T>(res: Response): Promise<T> {
 
 
 export async function getProfile(): Promise<UserProfile> {
-  const res = await fetch(`${BASE}/profile`, { headers: authHeaders() })
+  const res = await fetch(`${BASE}/profile/`, { headers: authHeaders() })
   return handleResponse<UserProfile>(res)
 }
 
