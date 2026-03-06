@@ -1,7 +1,7 @@
 import { Navigate, Outlet } from "react-router-dom"
 
 interface Props {
-  allowedRole: string
+  allowedRole:  string | string[]
 }
 
 export default function ProtectedRoute({ allowedRole }: Props) {

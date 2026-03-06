@@ -10,6 +10,8 @@ import AdminLayout from "./layouts/AdminLayout"
 import UserDashboard from "./pages/user/Dashboard"
 import UserLayout from "./layouts/UserLayout"
 
+import Settings from "./pages/Settings"
+
 
 
 export default function App() {
@@ -25,14 +27,16 @@ export default function App() {
         <Route element={<ProtectedRoute allowedRole="ADMIN" />}>
           <Route element={<AdminLayout />}>
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
+            <Route path="/admin-settings" element={<Settings />} />
           </Route>
         </Route>
 
         <Route element={<ProtectedRoute allowedRole="USER" />}>
           <Route element={<UserLayout />}>
-            <Route path="/user-dashboard" element={<UserDashboard />} />\
+            <Route path="/user-dashboard" element={<UserDashboard />} />
+            <Route path="/user-settings" element={<Settings />} />
           </Route>
-        </Route>
+        </Route>        
       </Routes>
 
   )
