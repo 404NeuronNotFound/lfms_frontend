@@ -717,20 +717,7 @@ export default function SettingsPage() {
                       <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 12 }}>
                         {isAdmin ? "Administrator" : "Member"} · joined {profile?.date_joined ? new Date(profile.date_joined).toLocaleDateString("en-US", { month: "long", year: "numeric" }) : "—"}
                       </div>
-                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                        <motion.button
-                          whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}
-                          onClick={() => setShowAvatarModal(true)}
-                          style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 9, border: "1px solid rgba(99,102,241,0.35)", background: "rgba(99,102,241,0.1)", fontSize: 13, fontWeight: 500, color: "#a5b4fc", cursor: "pointer", fontFamily: "'DM Sans',sans-serif", transition: "all 0.2s" }}>
-                          <Upload size={13} /> Change Photo
-                        </motion.button>
-                        {currentAvatar && (
-                          <button onClick={handleRemoveAvatar}
-                            style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 9, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.45)", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
-                            <X size={13} /> Remove
-                          </button>
-                        )}
-                      </div>
+                      
                     </div>
                   </div>
                 </SectionCard>
