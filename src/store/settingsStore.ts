@@ -35,16 +35,16 @@ interface SettingsState {
 }
 
 export const useSettingsStore = create<SettingsState>((set) => ({
-  profile: null,
-  loadingProfile: false,
-  savingProfile: false,
-  savingPassword: false,
-  savingNotifs: false,
+  profile:         null,
+  loadingProfile:  false,
+  savingProfile:   false,
+  savingPassword:  false,
+  savingNotifs:    false,
   deletingAccount: false,
-  profileError: null,
-  passwordError: null,
-  notifsError: null,
-  successMessage: null,
+  profileError:    null,
+  passwordError:   null,
+  notifsError:     null,
+  successMessage:  null,
 
   fetchProfile: async () => {
     set({ loadingProfile: true, profileError: null })
@@ -60,7 +60,13 @@ export const useSettingsStore = create<SettingsState>((set) => ({
     set({ savingProfile: true, profileError: null, successMessage: null })
     try {
       const res = await updateProfile(payload)
-      set({ savingProfile: false, profile: res.user, successMessage: "Profile updated successfully" })
+      set({
+        savingProfile:  false,
+        // Use the full user object returned by the server — this includes
+        // the new avatar URL if a file was uploaded
+        profile:        res.user,
+        successMessage: "Profile updated successfully",
+      })
     } catch (err: any) {
       set({ savingProfile: false, profileError: err.message ?? "Failed to update profile" })
       throw err
@@ -83,8 +89,9 @@ export const useSettingsStore = create<SettingsState>((set) => ({
     try {
       await updateNotificationPrefs(payload)
       set((s) => ({
-        savingNotifs: false,
+        savingNotifs:   false,
         successMessage: "Notification preferences saved",
+        // Merge toggles into existing profile object
         profile: s.profile ? { ...s.profile, ...payload } : s.profile,
       }))
     } catch (err: any) {
@@ -105,5 +112,10 @@ export const useSettingsStore = create<SettingsState>((set) => ({
     }
   },
 
-  clearMessages: () => set({ successMessage: null, profileError: null, passwordError: null, notifsError: null }),
+  clearMessages: () => set({
+    successMessage: null,
+    profileError:   null,
+    passwordError:  null,
+    notifsError:    null,
+  }),
 }))

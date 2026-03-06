@@ -1,3 +1,4 @@
+// ── Profile (as returned by the server) ──────────────────────────────────
 export interface UserProfile {
   id: number
   username: string
@@ -8,7 +9,7 @@ export interface UserProfile {
     phone_number?: string
     address?: string
     bio?: string
-     avatar?: string
+    avatar?: string        // URL string from server
   }
   role: string
   date_joined: string
@@ -18,16 +19,17 @@ export interface UserProfile {
   two_factor_enabled: boolean
 }
 
-
+// ── Update profile (sent to server) ──────────────────────────────────────
+// avatar is a File object when uploading, or omitted to leave unchanged
 export interface UpdateProfilePayload {
-  first_name: string
-  last_name: string
-  email: string
-  profile: {
+  first_name?: string
+  last_name?: string
+  email?: string
+  profile?: {
     phone_number?: string
     address?: string
     bio?: string
-    avatar?: string
+    avatar?: File          // File object → sent as multipart
   }
 }
 
@@ -36,7 +38,7 @@ export interface UpdateProfileResponse {
   user: UserProfile
 }
 
-
+// ── Change password ───────────────────────────────────────────────────────
 export interface ChangePasswordPayload {
   current_password: string
   new_password: string
@@ -47,14 +49,14 @@ export interface ChangePasswordResponse {
   message: string
 }
 
-
+// ── Notification preferences ──────────────────────────────────────────────
 export interface NotificationPrefsPayload {
   notifications_email: boolean
   notifications_push: boolean
   notifications_sms: boolean
 }
 
-
+// ── Delete account ────────────────────────────────────────────────────────
 export interface DeleteAccountPayload {
   password: string
 }
