@@ -32,7 +32,7 @@ const ADMIN_NAV = [
   {
     group: "Users",
     items: [
-      { icon: Users,          label: "All Users",      href: "/admin-users",      badge: null },
+      { icon: Users,          label: "All Users",      href: "/admin-all-users",      badge: null },
       { icon: ShieldCheck,    label: "Verifications",  href: "/admin-verify",     badge: "7"  },
       { icon: MessageSquare,  label: "Messages",       href: "/admin-messages",   badge: "3"  },
     ],
