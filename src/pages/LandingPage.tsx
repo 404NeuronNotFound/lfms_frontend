@@ -163,7 +163,9 @@ export default function LandingPage() {
               <div style={{ display: "flex", gap: 10 }}>
                 
                 <button className="btn-secondary" onClick={() => navigate("/login")} style={{ padding: "8px 18px", borderRadius: 10, fontSize: 14, fontWeight: 500, color: "white", cursor: "pointer" }}>Login</button>
-                <button className="btn-primary" style={{ padding: "8px 18px", borderRadius: 10, fontSize: 14, fontWeight: 600, color: "white", border: "none", cursor: "pointer" }}>Get Started</button>
+                <button className="btn-primary" onClick={() => navigate("/register")} style={{ padding: "8px 18px", borderRadius: 10, fontSize: 14, fontWeight: 600, color: "white", border: "none", cursor: "pointer" }}>
+                  Get Started Free
+                </button>
               </div>
             ) : (
               <button onClick={() => setMenuOpen(v => !v)} style={{ background: "none", border: "none", color: "white", cursor: "pointer", padding: 4, display: "flex" }}>
@@ -227,7 +229,7 @@ export default function LandingPage() {
 
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
                 style={{ display: "flex", gap: 10, marginBottom: 36, flexDirection: isMobile ? "column" : "row" }}>
-                <button className="btn-primary" style={{ padding: "13px 24px", borderRadius: 12, fontSize: 15, fontWeight: 600, color: "white", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                <button className="btn-primary" onClick={() => navigate("/register")} style={{ padding: "13px 24px", borderRadius: 12, fontSize: 15, fontWeight: 600, color: "white", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
                   Report Lost Item <ArrowRight size={15} />
                 </button>
                 <button className="btn-secondary" style={{ padding: "13px 24px", borderRadius: 12, fontSize: 15, fontWeight: 500, color: "white", cursor: "pointer", textAlign: "center" }}>
@@ -484,10 +486,10 @@ export default function LandingPage() {
             Join 200+ institutions. Set up in under 10 minutes. No credit card required.
           </p>
           <div style={{ display: "flex", gap: 10, justifyContent: "center", flexDirection: isMobile ? "column" : "row", maxWidth: isMobile ? 320 : "none", margin: "0 auto" }}>
-            <button className="btn-primary" style={{ padding: "13px 28px", borderRadius: 12, fontSize: 15, fontWeight: 600, color: "white", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+            <button className="btn-primary" onClick={() => navigate("/register")} style={{ padding: "13px 28px", borderRadius: 12, fontSize: 15, fontWeight: 600, color: "white", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
               Start for Free <ArrowRight size={15} />
             </button>
-            <button className="btn-secondary" style={{ padding: "13px 28px", borderRadius: 12, fontSize: 15, fontWeight: 500, color: "white", cursor: "pointer" }}>
+            <button className="btn-secondary" onClick={() => navigate("/register")} style={{ padding: "13px 28px", borderRadius: 12, fontSize: 15, fontWeight: 500, color: "white", cursor: "pointer" }}>
               Schedule Demo
             </button>
           </div>
