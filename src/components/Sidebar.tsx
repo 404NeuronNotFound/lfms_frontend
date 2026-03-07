@@ -24,7 +24,7 @@ const ADMIN_NAV = [
   {
     group: "Management",
     items: [
-      { icon: ClipboardList,  label: "All Reports",   href: "/admin-reports",    badge: "128" },
+      { icon: ClipboardList,  label: "All Reports",   href: "/admin-all-reports",    badge: "128" },
       { icon: PackageSearch,  label: "Lost Items",    href: "/admin-lost",       badge: "54"  },
       { icon: Tag,            label: "Found Items",   href: "/admin-found",      badge: "74"  },
       { icon: CheckCircle,    label: "Claimed",       href: "/admin-claimed",    badge: null  },
