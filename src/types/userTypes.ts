@@ -1,4 +1,4 @@
-// ── User profile (nested) ─────────────────────────────────────────────────
+
 export interface UserProfile {
   phone_number: string | null
   address:      string | null
@@ -6,7 +6,7 @@ export interface UserProfile {
   avatar:       string | null
 }
 
-// ── Full user returned from API ───────────────────────────────────────────
+
 export interface ApiUser {
   id:          number
   username:    string
@@ -15,14 +15,14 @@ export interface ApiUser {
   email:       string
   role:        "ADMIN" | "USER"
   status:      "active" | "inactive" | "banned"
-  date_joined: string          // ISO-8601 string
-  last_login:  string | null   // ISO-8601 string or null
+  date_joined: string          
+  last_login:  string | null   
   reports:     number
   claims:      number
   profile:     UserProfile | null
 }
 
-// ── Stats returned by /admin/users/stats/ ─────────────────────────────────
+
 export interface UserStats {
   total:          number
   admins:         number
@@ -32,7 +32,7 @@ export interface UserStats {
   new_this_month: number
 }
 
-// ── List response from /admin/users/ ─────────────────────────────────────
+
 export interface UserListResponse {
   count: number
   users: ApiUser[]
