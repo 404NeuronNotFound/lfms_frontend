@@ -10,38 +10,39 @@ import {
   ChevronRight, Menu, X, Tag, MapPin, CheckCircle, MessageSquare,
   FileText,
 } from "lucide-react"
+import LogoutModal from "@/components/LogoutModal"
 
 // ── Nav config ────────────────────────────────────────────────────────────
 const ADMIN_NAV = [
   {
     group: "Overview",
     items: [
-      { icon: LayoutDashboard, label: "Dashboard",     href: "/admin-dashboard",  badge: null },
-      { icon: BarChart3,       label: "Analytics",     href: "/admin-analytics",  badge: null },
+      { icon: LayoutDashboard, label: "Dashboard",    href: "/admin-dashboard",  badge: null },
+      { icon: BarChart3,       label: "Analytics",    href: "/admin-analytics",  badge: null },
     ],
   },
   {
     group: "Management",
     items: [
-      { icon: ClipboardList,  label: "All Reports",    href: "/admin-reports",    badge: "128" },
-      { icon: PackageSearch,  label: "Lost Items",     href: "/admin-lost",       badge: "54"  },
-      { icon: Tag,            label: "Found Items",    href: "/admin-found",      badge: "74"  },
-      { icon: CheckCircle,    label: "Claimed",        href: "/admin-claimed",    badge: null  },
+      { icon: ClipboardList,  label: "All Reports",   href: "/admin-reports",    badge: "128" },
+      { icon: PackageSearch,  label: "Lost Items",    href: "/admin-lost",       badge: "54"  },
+      { icon: Tag,            label: "Found Items",   href: "/admin-found",      badge: "74"  },
+      { icon: CheckCircle,    label: "Claimed",       href: "/admin-claimed",    badge: null  },
     ],
   },
   {
     group: "Users",
     items: [
-      { icon: Users,          label: "All Users",      href: "/admin-all-users",      badge: null },
-      { icon: ShieldCheck,    label: "Verifications",  href: "/admin-verify",     badge: "7"  },
-      { icon: MessageSquare,  label: "Messages",       href: "/admin-messages",   badge: "3"  },
+      { icon: Users,          label: "All Users",     href: "/admin-all-users",  badge: null },
+      { icon: ShieldCheck,    label: "Verifications", href: "/admin-verify",     badge: "7"  },
+      { icon: MessageSquare,  label: "Messages",      href: "/admin-messages",   badge: "3"  },
     ],
   },
   {
     group: "System",
     items: [
-      { icon: FileText,       label: "Audit Logs",     href: "/admin-logs",       badge: null },
-      { icon: Settings,       label: "Settings",       href: "/admin-settings",   badge: null },
+      { icon: FileText,       label: "Audit Logs",    href: "/admin-logs",       badge: null },
+      { icon: Settings,       label: "Settings",      href: "/admin-settings",   badge: null },
     ],
   },
 ]
@@ -50,25 +51,25 @@ const USER_NAV = [
   {
     group: "Home",
     items: [
-      { icon: LayoutDashboard, label: "Dashboard",     href: "/user-dashboard",    badge: null },
-      { icon: Bell,            label: "Notifications", href: "/user-notifications",badge: "2"  },
+      { icon: LayoutDashboard, label: "Dashboard",    href: "/user-dashboard",     badge: null },
+      { icon: Bell,            label: "Notifications",href: "/user-notifications", badge: "2"  },
     ],
   },
   {
     group: "Items",
     items: [
-      { icon: PackagePlus,    label: "Report Lost",    href: "/user-report-lost",  badge: null },
-      { icon: PackageSearch,  label: "Browse Found",   href: "/user-browse",       badge: null },
-      { icon: ClipboardList,  label: "My Reports",     href: "/user-reports",      badge: null },
-      { icon: CheckCircle,    label: "My Claims",      href: "/user-claims",       badge: null },
+      { icon: PackagePlus,    label: "Report Lost",   href: "/user-report-lost",   badge: null },
+      { icon: PackageSearch,  label: "Browse Found",  href: "/user-browse",        badge: null },
+      { icon: ClipboardList,  label: "My Reports",    href: "/user-reports",       badge: null },
+      { icon: CheckCircle,    label: "My Claims",     href: "/user-claims",        badge: null },
     ],
   },
   {
     group: "Account",
     items: [
-      { icon: MapPin,         label: "My Location",    href: "/user-location",     badge: null },
-      { icon: MessageSquare,  label: "Messages",       href: "/user-messages",     badge: "1"  },
-      { icon: Settings,       label: "Settings",       href: "/user-settings",     badge: null },
+      { icon: MapPin,         label: "My Location",   href: "/user-location",      badge: null },
+      { icon: MessageSquare,  label: "Messages",      href: "/user-messages",      badge: "1"  },
+      { icon: Settings,       label: "Settings",      href: "/user-settings",      badge: null },
     ],
   },
 ]
@@ -77,10 +78,8 @@ interface NavItem  { icon: React.ElementType; label: string; href: string; badge
 interface NavGroup { group: string; items: NavItem[] }
 interface SidebarProps { collapsed: boolean; setCollapsed: (v: boolean) => void }
 
-// ── Avatar renderer — handles URL / emoji / initials ─────────────────────
-function SidebarAvatar({
-  src, initials, size = 34,
-}: { src?: string | null; initials: string; size?: number }) {
+// ── Avatar renderer ───────────────────────────────────────────────────────
+function SidebarAvatar({ src, initials, size = 34 }: { src?: string | null; initials: string; size?: number }) {
   const style: React.CSSProperties = {
     width: size, height: size, borderRadius: "50%", flexShrink: 0,
     display: "flex", alignItems: "center", justifyContent: "center",
@@ -88,27 +87,19 @@ function SidebarAvatar({
     fontSize: Math.round(size * 0.35), fontWeight: 700, overflow: "hidden",
     border: "2px solid rgba(99,102,241,0.4)",
   }
-
   if (src?.startsWith("emoji:")) {
     return (
       <div style={style}>
-        <span style={{ fontSize: Math.round(size * 0.52), lineHeight: 1 }}>
-          {src.replace("emoji:", "")}
-        </span>
+        <span style={{ fontSize: Math.round(size * 0.52), lineHeight: 1 }}>{src.replace("emoji:", "")}</span>
       </div>
     )
   }
-
   if (src) {
     return (
-      <img
-        src={src} alt="avatar"
-        style={{ ...style, objectFit: "cover" }}
-        onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none" }}
-      />
+      <img src={src} alt="avatar" style={{ ...style, objectFit: "cover" }}
+        onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none" }} />
     )
   }
-
   return <div style={style}>{initials}</div>
 }
 
@@ -117,12 +108,13 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
   const { user, role, logout } = useAuthStore()
   const { profile, fetchProfile } = useSettingsStore()
 
-  const [mobileOpen, setMobileOpen] = useState(false)
-  const [activeHref, setActiveHref] = useState(
+  const [mobileOpen,        setMobileOpen]        = useState(false)
+  const [activeHref,        setActiveHref]        = useState(
     typeof window !== "undefined" ? window.location.pathname : ""
   )
-  const [isMobile, setIsMobile] = useState(false)
-  const [showProfileCard, setShowProfileCard] = useState(false)
+  const [isMobile,          setIsMobile]          = useState(false)
+  const [showProfileCard,   setShowProfileCard]   = useState(false)
+  const [showLogoutModal,   setShowLogoutModal]   = useState(false)
 
   useEffect(() => {
     const check = () => {
@@ -135,7 +127,6 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
     return () => window.removeEventListener("resize", check)
   }, [])
 
-  // Load profile on mount so avatar is always fresh
   useEffect(() => { fetchProfile() }, [])
 
   const isAdmin    = role === "ADMIN"
@@ -152,19 +143,23 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
   const avatarSrc    = profile?.profile?.avatar ?? null
   const settingsHref = isAdmin ? "/admin-settings" : "/user-settings"
 
-  // ── Profile popover card ──────────────────────────────────────────────
+  // ── Confirm logout ────────────────────────────────────────────────────
+  function handleLogout() {
+    setShowLogoutModal(false)
+    setShowProfileCard(false)
+    logout()
+  }
+
+  // ── Profile popover ───────────────────────────────────────────────────
   const ProfileCard = () => (
     <AnimatePresence>
       {showProfileCard && (
         <>
-          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             onClick={() => setShowProfileCard(false)}
             style={{ position: "fixed", inset: 0, zIndex: 45 }}
           />
-
-          {/* Card */}
           <motion.div
             initial={{ opacity: 0, y: 8, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -172,18 +167,14 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
             transition={{ duration: 0.18 }}
             style={{
               position: "fixed",
-              bottom: 80,
-              left: collapsed ? 72 : 252,
-              zIndex: 50,
-              width: 260,
+              bottom: 80, left: collapsed ? 72 : 252,
+              zIndex: 50, width: 260,
               background: "rgba(10,10,24,0.98)",
               border: "1px solid rgba(255,255,255,0.1)",
-              borderRadius: 16,
-              padding: 20,
+              borderRadius: 16, padding: 20,
               backdropFilter: "blur(24px)",
               boxShadow: "0 20px 60px rgba(0,0,0,0.6)",
-              fontFamily: "'DM Sans',sans-serif",
-              color: "white",
+              fontFamily: "'DM Sans',sans-serif", color: "white",
             }}
           >
             {/* Avatar + name */}
@@ -198,7 +189,6 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                 <div style={{ fontSize: 12, color: "#6b7280", marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {profile?.email ?? ""}
                 </div>
-                {/* Role badge */}
                 <div style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 5, padding: "2px 8px", borderRadius: 20, background: isAdmin ? "rgba(99,102,241,0.12)" : "rgba(52,211,153,0.1)", border: isAdmin ? "1px solid rgba(99,102,241,0.28)" : "1px solid rgba(52,211,153,0.2)" }}>
                   <span style={{ width: 5, height: 5, borderRadius: "50%", background: isAdmin ? "#818cf8" : "#34d399", boxShadow: isAdmin ? "0 0 5px #818cf8" : "0 0 5px #34d399" }} />
                   <span style={{ fontSize: 10, fontWeight: 600, color: isAdmin ? "#a5b4fc" : "#6ee7b7", textTransform: "uppercase", letterSpacing: 0.5 }}>
@@ -251,7 +241,8 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                 onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "rgba(99,102,241,0.1)"}>
                 <Settings size={14} /><span>Edit Profile & Settings</span>
               </a>
-              <button onClick={() => { setShowProfileCard(false); logout() }}
+              <button
+                onClick={() => { setShowProfileCard(false); setShowLogoutModal(true) }}
                 style={{ display: "flex", alignItems: "center", gap: 9, padding: "9px 12px", borderRadius: 10, background: "rgba(239,68,68,0.07)", border: "1px solid rgba(239,68,68,0.18)", color: "#f87171", fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", transition: "all 0.2s", width: "100%" }}
                 onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "rgba(239,68,68,0.14)"}
                 onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "rgba(239,68,68,0.07)"}>
@@ -315,7 +306,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                 <motion.a key={ii} href={item.href} whileHover={{ x: collapsed ? 0 : 2 }}
                   onClick={() => { setActiveHref(item.href); onNavigate?.() }}
                   title={collapsed ? item.label : undefined}
-                  style={{ display: "flex", alignItems: "center", gap: collapsed ? 0 : 10, justifyContent: collapsed ? "center" : "flex-start", padding: collapsed ? "10px" : "9px 10px", borderRadius: 10, marginBottom: 2, textDecoration: "none", position: "relative", background: isActive ? "linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.15))" : "transparent", border: isActive ? "1px solid rgba(99,102,241,0.3)" : "1px solid transparent", transition: "all 0.2s ease" }}
+                  style={{ display: "flex", alignItems: "center", gap: collapsed ? 0 : 10, justifyContent: collapsed ? "center" : "flex-start", padding: collapsed ? "10px" : "9px 10px", borderRadius: 10, marginBottom: 2, textDecoration: "none", position: "relative", background: isActive ? "linear-gradient(135deg,rgba(99,102,241,0.2),rgba(139,92,246,0.15))" : "transparent", border: isActive ? "1px solid rgba(99,102,241,0.3)" : "1px solid transparent", transition: "all 0.2s ease" }}
                   onMouseEnter={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)"; (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.07)" } }}
                   onMouseLeave={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.borderColor = "transparent" } }}
                 >
@@ -338,7 +329,6 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
       {/* ── User profile section at bottom ── */}
       <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", padding: collapsed ? "12px 8px" : "12px" }}>
 
-        {/* Collapsed: just the avatar button */}
         {collapsed ? (
           <motion.button whileTap={{ scale: 0.95 }}
             onClick={() => setShowProfileCard(v => !v)}
@@ -346,12 +336,10 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
             style={{ width: "100%", display: "flex", justifyContent: "center", background: "transparent", border: "none", cursor: "pointer", padding: "6px 0" }}>
             <div style={{ position: "relative" }}>
               <SidebarAvatar src={avatarSrc} initials={initials} size={36} />
-              {/* Online dot */}
               <span style={{ position: "absolute", bottom: 1, right: 1, width: 8, height: 8, borderRadius: "50%", background: "#34d399", border: "2px solid #080814", boxShadow: "0 0 5px #34d399" }} />
             </div>
           </motion.button>
         ) : (
-          /* Expanded: full profile card row */
           <motion.button
             whileHover={{ background: "rgba(255,255,255,0.04)" }}
             whileTap={{ scale: 0.98 }}
@@ -363,14 +351,10 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
               border: showProfileCard ? "1px solid rgba(99,102,241,0.25)" : "1px solid rgba(255,255,255,0.07)",
               cursor: "pointer", transition: "all 0.2s", marginBottom: 8,
             }}>
-            {/* Avatar */}
             <div style={{ position: "relative", flexShrink: 0 }}>
               <SidebarAvatar src={avatarSrc} initials={initials} size={36} />
-              {/* Online dot */}
               <span style={{ position: "absolute", bottom: 0, right: 0, width: 9, height: 9, borderRadius: "50%", background: "#34d399", border: "2px solid #080814", boxShadow: "0 0 6px #34d399" }} />
             </div>
-
-            {/* Name + role */}
             <div style={{ flex: 1, minWidth: 0, textAlign: "left" }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: "#ffffff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {displayName}
@@ -379,15 +363,14 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                 {isAdmin ? "Administrator" : "Member"}
               </div>
             </div>
-
-            {/* Chevron indicator */}
             <ChevronRight size={13} color="rgba(255,255,255,0.3)"
               style={{ flexShrink: 0, transform: showProfileCard ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 0.2s" }} />
           </motion.button>
         )}
 
-        {/* Logout button — always visible */}
-        <motion.button whileTap={{ scale: 0.97 }} onClick={logout}
+        {/* Logout button */}
+        <motion.button whileTap={{ scale: 0.97 }}
+          onClick={() => setShowLogoutModal(true)}
           style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: collapsed ? "center" : "flex-start", gap: 8, padding: collapsed ? "10px" : "9px 10px", borderRadius: 10, background: "transparent", border: "1px solid transparent", color: "rgba(255,255,255,0.35)", cursor: "pointer", fontSize: 13, transition: "all 0.2s ease", fontFamily: "'DM Sans',sans-serif" }}
           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(239,68,68,0.1)"; (e.currentTarget as HTMLElement).style.borderColor = "rgba(239,68,68,0.2)"; (e.currentTarget as HTMLElement).style.color = "#f87171" }}
           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.borderColor = "transparent"; (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.35)" }}>
@@ -408,6 +391,13 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
         nav::-webkit-scrollbar-track { background: transparent; }
         nav::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.3); border-radius: 2px; }
       `}</style>
+
+      {/* Logout confirmation modal */}
+      <LogoutModal
+        open={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={handleLogout}
+      />
 
       {/* Mobile hamburger */}
       {isMobile && (
@@ -453,7 +443,6 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
     </>
   )
 }
-
 
 export function SidebarLayout({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false)
