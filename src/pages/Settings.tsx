@@ -6,9 +6,16 @@ import {
   User, Mail, Lock, Eye, EyeOff, Bell, Shield,
   Trash2, Camera, CheckCircle, AlertTriangle,
   MapPin, Phone, FileText, ChevronRight, Save,
-  Smartphone, Globe, Key, X, Upload,
+  Smartphone, Globe, Key, LogOut, X, Upload, ShieldOff,
 } from "lucide-react"
+import DeactivateModal from "@/components/DeactivateModal"
 
+// ── Helper: render avatar correctly for all 3 possible values ─────────────
+// avatarSrc can be:
+//   null/undefined → show initials
+//   "emoji:🦊"    → show emoji in gradient circle (NOT as <img> src)
+//   "https://…"   → server URL, use <img>
+//   "data:…"      → local base64 preview, use <img>
 function AvatarDisplay({
   src, initials, size = 80, fontSize = 26, border = true,
 }: {
@@ -137,7 +144,7 @@ function SaveButton({ loading, label = "Save Changes", onClick, disabled: extDis
 
 // ── MAIN PAGE ─────────────────────────────────────────────────────────────
 export default function SettingsPage() {
-  const { user, role } = useAuthStore()
+  const { user, role, logout } = useAuthStore()
   const {
     profile, loadingProfile, savingProfile, savingPassword, savingNotifs, deletingAccount,
     profileError, passwordError, notifsError, successMessage,
@@ -183,6 +190,7 @@ export default function SettingsPage() {
   const [deleteConfirm,  setDeleteConfirm]  = useState(false)
   const [showDeletePass, setShowDeletePass] = useState(false)
   const [deleteError,    setDeleteError]    = useState("")
+  const [showDeactivateModal, setShowDeactivateModal] = useState(false)
 
   // ── Toast ──
   const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null)
@@ -664,6 +672,14 @@ export default function SettingsPage() {
                   </button>
                 ))}
               </div>
+              <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", marginTop: 10, paddingTop: 10 }}>
+                <button onClick={logout}
+                  style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 11, border: "none", background: "transparent", cursor: "pointer", color: "rgba(255,255,255,0.4)", fontFamily: "'DM Sans',sans-serif", fontSize: 14, transition: "all 0.2s" }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(239,68,68,0.08)"; (e.currentTarget as HTMLElement).style.color = "#f87171" }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.4)" }}>
+                  <LogOut size={16} /><span>Logout</span>
+                </button>
+              </div>
             </div>
           )}
         </motion.div>
@@ -703,7 +719,20 @@ export default function SettingsPage() {
                       <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 12 }}>
                         {isAdmin ? "Administrator" : "Member"} · joined {profile?.date_joined ? new Date(profile.date_joined).toLocaleDateString("en-US", { month: "long", year: "numeric" }) : "—"}
                       </div>
-                      
+                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                        <motion.button
+                          whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}
+                          onClick={() => setShowAvatarModal(true)}
+                          style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 9, border: "1px solid rgba(99,102,241,0.35)", background: "rgba(99,102,241,0.1)", fontSize: 13, fontWeight: 500, color: "#a5b4fc", cursor: "pointer", fontFamily: "'DM Sans',sans-serif", transition: "all 0.2s" }}>
+                          <Upload size={13} /> Change Photo
+                        </motion.button>
+                        {currentAvatar && (
+                          <button onClick={handleRemoveAvatar}
+                            style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 9, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.45)", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
+                            <X size={13} /> Remove
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </SectionCard>
@@ -883,10 +912,34 @@ export default function SettingsPage() {
                     <button style={{ padding: "9px 18px", borderRadius: 10, border: "1px solid rgba(99,102,241,0.3)", background: "rgba(99,102,241,0.08)", fontSize: 13, fontWeight: 500, color: "#a5b4fc", cursor: "pointer", fontFamily: "'DM Sans',sans-serif", whiteSpace: "nowrap" }}>Request Export</button>
                   </div>
                 </SectionCard>
-                <SectionCard title="Deactivate Account" desc="Temporarily hide your profile and pause all notifications">
+                <DeactivateModal
+                  open={showDeactivateModal}
+                  onClose={() => setShowDeactivateModal(false)}
+                />
+                <SectionCard title="Deactivate Account" desc="Temporarily hide your profile and pause all activity">
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 14 }}>
-                    <div style={{ fontSize: 13, color: "#8b92b8", maxWidth: 480, lineHeight: 1.6 }}>Your account will be hidden. You can reactivate at any time by logging back in.</div>
-                    <button style={{ padding: "9px 18px", borderRadius: 10, border: "1px solid rgba(245,158,11,0.3)", background: "rgba(245,158,11,0.07)", fontSize: 13, fontWeight: 500, color: "#fbbf24", cursor: "pointer", fontFamily: "'DM Sans',sans-serif", whiteSpace: "nowrap" }}>Deactivate Account</button>
+                    <div style={{ fontSize: 13, color: "#8b92b8", maxWidth: 440, lineHeight: 1.7 }}>
+                      Your account will be hidden and notifications paused.{" "}
+                      <span style={{ color: "#a5b4fc" }}>
+                        Log back in at any time to reactivate automatically.
+                      </span>
+                    </div>
+                    <motion.button
+                      whileHover={{ y: -1, boxShadow: "0 6px 20px rgba(245,158,11,0.18)" }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => setShowDeactivateModal(true)}
+                      style={{
+                        padding: "9px 18px", borderRadius: 10,
+                        border: "1px solid rgba(245,158,11,0.3)",
+                        background: "rgba(245,158,11,0.07)",
+                        fontSize: 13, fontWeight: 600, color: "#fbbf24",
+                        cursor: "pointer", fontFamily: "'DM Sans',sans-serif",
+                        whiteSpace: "nowrap", transition: "all 0.2s",
+                        display: "flex", alignItems: "center", gap: 7,
+                      }}>
+                      <ShieldOff size={13} />
+                      Deactivate Account
+                    </motion.button>
                   </div>
                 </SectionCard>
                 <div style={{ background: "rgba(239,68,68,0.05)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 18, padding: "26px 28px" }}>

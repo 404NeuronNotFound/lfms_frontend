@@ -12,6 +12,7 @@ export interface UserProfile {
     avatar?: string        // URL string from server
   }
   role: string
+  status: "active" | "inactive" | "banned"
   date_joined: string
   notifications_email: boolean
   notifications_push: boolean
@@ -20,7 +21,6 @@ export interface UserProfile {
 }
 
 // ── Update profile (sent to server) ──────────────────────────────────────
-// avatar is a File object when uploading, or omitted to leave unchanged
 export interface UpdateProfilePayload {
   first_name?: string
   last_name?: string
@@ -59,4 +59,17 @@ export interface NotificationPrefsPayload {
 // ── Delete account ────────────────────────────────────────────────────────
 export interface DeleteAccountPayload {
   password: string
+}
+
+// ── Deactivate / Reactivate account ──────────────────────────────────────
+export interface DeactivateAccountPayload {
+  refresh?: string       // optional: blacklists current refresh token server-side
+}
+
+export interface DeactivateAccountResponse {
+  message: string
+}
+
+export interface ReactivateAccountResponse {
+  message: string
 }

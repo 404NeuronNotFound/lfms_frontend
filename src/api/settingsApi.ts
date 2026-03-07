@@ -7,12 +7,14 @@ import type {
   ChangePasswordResponse,
   NotificationPrefsPayload,
   DeleteAccountPayload,
+  DeactivateAccountPayload,
+  DeactivateAccountResponse,
+  ReactivateAccountResponse,
 } from "@/types/settingsTypes"
 
 const BASE = "http://localhost:8000/api"
 
 const JSON_HEADERS = { "Content-Type": "application/json" }
-
 
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {
@@ -24,12 +26,10 @@ async function handleResponse<T>(res: Response): Promise<T> {
   return res.json()
 }
 
-
 export async function getProfile(): Promise<UserProfile> {
   const res = await authFetch(`${BASE}/profile/`)
   return handleResponse<UserProfile>(res)
 }
-
 
 export async function updateProfile(payload: UpdateProfilePayload): Promise<UpdateProfileResponse> {
   const fd = new FormData()
@@ -45,15 +45,12 @@ export async function updateProfile(payload: UpdateProfilePayload): Promise<Upda
   if (payload.profile?.bio !== undefined)
     fd.append("profile[bio]", payload.profile.bio ?? "")
 
-
   if (payload.profile?.avatar instanceof File)
     fd.append("profile[avatar]", payload.profile.avatar)
-
 
   const res = await authFetch(`${BASE}/profile/`, { method: "PATCH", body: fd })
   return handleResponse<UpdateProfileResponse>(res)
 }
-
 
 export async function changePassword(payload: ChangePasswordPayload): Promise<ChangePasswordResponse> {
   const res = await authFetch(`${BASE}/change-password/`, {
@@ -63,7 +60,6 @@ export async function changePassword(payload: ChangePasswordPayload): Promise<Ch
   })
   return handleResponse<ChangePasswordResponse>(res)
 }
-
 
 export async function updateNotificationPrefs(payload: NotificationPrefsPayload): Promise<{ message: string }> {
   const res = await authFetch(`${BASE}/notification-preferences/`, {
@@ -81,4 +77,36 @@ export async function deleteAccount(payload: DeleteAccountPayload): Promise<{ me
     body:    JSON.stringify(payload),
   })
   return handleResponse<{ message: string }>(res)
+}
+
+// ── Account status ────────────────────────────────────────────────────────
+
+/**
+ * POST /api/account/deactivate/
+ * Sets the account status to "inactive".
+ * Optionally pass the current refresh token so the server blacklists it.
+ */
+export async function deactivateAccount(
+  payload?: DeactivateAccountPayload,
+): Promise<DeactivateAccountResponse> {
+  const refresh = payload?.refresh ?? localStorage.getItem("refresh") ?? undefined
+  const res = await authFetch(`${BASE}/account/deactivate/`, {
+    method:  "POST",
+    headers: JSON_HEADERS,
+    body:    JSON.stringify(refresh ? { refresh } : {}),
+  })
+  return handleResponse<DeactivateAccountResponse>(res)
+}
+
+/**
+ * POST /api/account/reactivate/
+ * Sets the account status back to "active" (JWT session must still be valid).
+ */
+export async function reactivateAccount(): Promise<ReactivateAccountResponse> {
+  const res = await authFetch(`${BASE}/account/reactivate/`, {
+    method:  "POST",
+    headers: JSON_HEADERS,
+    body:    JSON.stringify({}),
+  })
+  return handleResponse<ReactivateAccountResponse>(res)
 }
