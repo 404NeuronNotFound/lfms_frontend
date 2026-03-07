@@ -10,12 +10,6 @@ import {
 } from "lucide-react"
 import DeactivateModal from "@/components/DeactivateModal"
 
-// ── Helper: render avatar correctly for all 3 possible values ─────────────
-// avatarSrc can be:
-//   null/undefined → show initials
-//   "emoji:🦊"    → show emoji in gradient circle (NOT as <img> src)
-//   "https://…"   → server URL, use <img>
-//   "data:…"      → local base64 preview, use <img>
 function AvatarDisplay({
   src, initials, size = 80, fontSize = 26, border = true,
 }: {
@@ -50,7 +44,7 @@ const TABS = [
   { id: "danger",        label: "Danger Zone",   icon: Trash2 },
 ]
 
-// ── Section card ──────────────────────────────────────────────────────────
+
 function SectionCard({ title, desc, children }: { title: string; desc?: string; children: React.ReactNode }) {
   return (
     <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 18, padding: "26px 28px", marginBottom: 16 }}>
@@ -63,7 +57,7 @@ function SectionCard({ title, desc, children }: { title: string; desc?: string; 
   )
 }
 
-// ── Text input ────────────────────────────────────────────────────────────
+
 function FieldInput({
   id, label, placeholder, type = "text", icon: Icon, value, onChange,
   disabled = false, right, hint,
@@ -90,7 +84,7 @@ function FieldInput({
   )
 }
 
-// ── Toggle ────────────────────────────────────────────────────────────────
+
 function Toggle({ checked, onChange, label, desc }: { checked: boolean; onChange: (v: boolean) => void; label: string; desc?: string }) {
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 0", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
@@ -110,7 +104,6 @@ function Toggle({ checked, onChange, label, desc }: { checked: boolean; onChange
   )
 }
 
-// ── Save button ───────────────────────────────────────────────────────────
 function SaveButton({ loading, label = "Save Changes", onClick, disabled: extDisabled }: { loading: boolean; label?: string; onClick: () => void; disabled?: boolean }) {
   const isDisabled = loading || extDisabled
   return (
@@ -671,14 +664,6 @@ export default function SettingsPage() {
                     {activeTab === tab.id && <ChevronRight size={13} style={{ marginLeft: "auto" }} />}
                   </button>
                 ))}
-              </div>
-              <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", marginTop: 10, paddingTop: 10 }}>
-                <button onClick={logout}
-                  style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 11, border: "none", background: "transparent", cursor: "pointer", color: "rgba(255,255,255,0.4)", fontFamily: "'DM Sans',sans-serif", fontSize: 14, transition: "all 0.2s" }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(239,68,68,0.08)"; (e.currentTarget as HTMLElement).style.color = "#f87171" }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.4)" }}>
-                  <LogOut size={16} /><span>Logout</span>
-                </button>
               </div>
             </div>
           )}
