@@ -60,7 +60,7 @@ const USER_NAV = [
     items: [
       { icon: PackagePlus,    label: "Report Lost",   href: "/user-report-lost",   badge: null },
       { icon: PackageSearch,  label: "Browse Found",  href: "/user-browse",        badge: null },
-      { icon: ClipboardList,  label: "My Reports",    href: "/user-reports",       badge: null },
+      { icon: ClipboardList,  label: "My Reports",    href: "/user-my-reports",       badge: null },
       { icon: CheckCircle,    label: "My Claims",     href: "/user-claims",        badge: null },
     ],
   },

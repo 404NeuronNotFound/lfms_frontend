@@ -13,6 +13,7 @@ import AdminAllReports from "./pages/admin/AllReports"
 import UserDashboard from "./pages/user/Dashboard"
 import UserLayout from "./layouts/UserLayout"
 import UserReportLost from "./pages/user/ReportLost"
+import UserMyReports from "./pages/user/MyReports"
 
 
 import Settings from "./pages/Settings"
@@ -43,6 +44,7 @@ export default function App() {
             <Route path="/user-dashboard" element={<UserDashboard />} />
             <Route path="/user-settings" element={<Settings />} />
             <Route path="/user-report-lost" element={<UserReportLost />} />
+            <Route path="/user-my-reports" element={<UserMyReports />} />
           </Route>
         </Route>        
       </Routes>

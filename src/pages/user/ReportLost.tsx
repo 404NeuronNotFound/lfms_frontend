@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react"
+import React, { useState, useRef, useCallback, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   PackageSearch, ChevronRight, ChevronLeft, CheckCircle,
@@ -6,11 +6,28 @@ import {
   Zap, Package, Hash, Flag, Layers, TrendingUp, Image,
   Clock, DollarSign, Phone, Info, Eye, Send, Sparkles,
 } from "lucide-react"
+import { useReportStore } from "@/store/reportStore"
+import type { ReportCategory } from "@/types/reportTypes"
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TYPES & CONFIG
 // ─────────────────────────────────────────────────────────────────────────────
-type Category = "Electronics" | "Wallets & Bags" | "Keys" | "Clothing" | "Jewelry" | "Documents" | "Pets" | "Sports" | "Other"
+type Category = ReportCategory
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RESPONSIVE HOOK
+// ─────────────────────────────────────────────────────────────────────────────
+function useIsMobile(bp = 600) {
+  const [v, setV] = React.useState(() =>
+    typeof window !== "undefined" ? window.innerWidth < bp : false
+  )
+  React.useEffect(() => {
+    const handler = () => setV(window.innerWidth < bp)
+    window.addEventListener("resize", handler)
+    return () => window.removeEventListener("resize", handler)
+  }, [bp])
+  return v
+}
 
 interface FormData {
   // Step 1 — Item basics
@@ -82,7 +99,7 @@ function FieldHint({ children }: { children: React.ReactNode }) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ── Step 1: Item Info ────────────────────────────────────────────────────────
-function StepItemInfo({ data, set, errors }: { data: FormData; set: (k: keyof FormData, v: any) => void; errors: Partial<Record<keyof FormData, string>> }) {
+function StepItemInfo({ data, set, errors, isMobile }: { data: FormData; set: (k: keyof FormData, v: any) => void; errors: Partial<Record<keyof FormData, string>>; isMobile: boolean }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
       {/* Item name */}
@@ -106,7 +123,7 @@ function StepItemInfo({ data, set, errors }: { data: FormData; set: (k: keyof Fo
       {/* Category grid */}
       <div>
         <FieldLabel required>Category</FieldLabel>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8 }}>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2,1fr)" : "repeat(3,1fr)", gap: 8 }}>
           {CATEGORIES.map(c => {
             const selected = data.category === c.value
             return (
@@ -131,7 +148,7 @@ function StepItemInfo({ data, set, errors }: { data: FormData; set: (k: keyof Fo
       </div>
 
       {/* Brand + Color */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 14 }}>
         <div>
           <FieldLabel>Brand / Make</FieldLabel>
           <input className="rl-input" placeholder="e.g. Apple, Samsung" value={data.brand} onChange={e => set("brand", e.target.value)} maxLength={50} />
@@ -160,7 +177,7 @@ function StepItemInfo({ data, set, errors }: { data: FormData; set: (k: keyof Fo
 }
 
 // ── Step 2: Location & Date ──────────────────────────────────────────────────
-function StepLocation({ data, set, errors }: { data: FormData; set: (k: keyof FormData, v: any) => void; errors: Partial<Record<keyof FormData, string>> }) {
+function StepLocation({ data, set, errors, isMobile }: { data: FormData; set: (k: keyof FormData, v: any) => void; errors: Partial<Record<keyof FormData, string>>; isMobile: boolean }) {
   const today = new Date().toISOString().split("T")[0]
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
@@ -189,7 +206,7 @@ function StepLocation({ data, set, errors }: { data: FormData; set: (k: keyof Fo
       </div>
 
       {/* Date + Time */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 14 }}>
         <div>
           <FieldLabel required>Date Lost</FieldLabel>
           <div style={{ position: "relative" }}>
@@ -255,7 +272,7 @@ function StepLocation({ data, set, errors }: { data: FormData; set: (k: keyof Fo
 }
 
 // ── Step 3: Description & Extras ─────────────────────────────────────────────
-function StepDetails({ data, set, errors }: { data: FormData; set: (k: keyof FormData, v: any) => void; errors: Partial<Record<keyof FormData, string>> }) {
+function StepDetails({ data, set, errors, isMobile }: { data: FormData; set: (k: keyof FormData, v: any) => void; errors: Partial<Record<keyof FormData, string>>; isMobile: boolean }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
       {/* Description */}
@@ -292,7 +309,7 @@ function StepDetails({ data, set, errors }: { data: FormData; set: (k: keyof For
       </div>
 
       {/* Reward + Phone */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 14 }}>
         <div>
           <FieldLabel>Reward Offer</FieldLabel>
           <div style={{ position: "relative" }}>
@@ -399,7 +416,7 @@ function StepImages({ data, set }: { data: FormData; set: (k: keyof FormData, v:
 }
 
 // ── Review step ───────────────────────────────────────────────────────────────
-function StepReview({ data }: { data: FormData }) {
+function StepReview({ data, isMobile }: { data: FormData; isMobile: boolean }) {
   const cat = CATEGORIES.find(c => c.value === data.category)
   const CatIcon = cat?.icon ?? Tag
   return (
@@ -423,7 +440,7 @@ function StepReview({ data }: { data: FormData }) {
       </div>
 
       {/* Fields review */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 10 }}>
         {[
           { icon: MapPin,   label: "Location",    value: [data.location, data.location_detail].filter(Boolean).join(", ") || "—" },
           { icon: Calendar, label: "Date Lost",   value: data.date_lost ? new Date(data.date_lost).toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"}) : "—" },
@@ -464,10 +481,10 @@ function StepReview({ data }: { data: FormData }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // SUCCESS SCREEN
 // ─────────────────────────────────────────────────────────────────────────────
-function SuccessScreen({ onNew }: { onNew: () => void }) {
+function SuccessScreen({ onNew, isMobile }: { onNew: () => void; isMobile: boolean }) {
   return (
     <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
-      style={{ textAlign: "center", padding: "20px 0 10px", display: "flex", flexDirection: "column", alignItems: "center", gap: 0 }}>
+      style={{ textAlign: "center", padding: isMobile ? "10px 0 4px" : "20px 0 10px", display: "flex", flexDirection: "column", alignItems: "center", gap: 0 }}>
       {/* Animated ring */}
       <div style={{ position: "relative", marginBottom: 28 }}>
         <motion.div
@@ -492,13 +509,13 @@ function SuccessScreen({ onNew }: { onNew: () => void }) {
       </p>
 
       {/* CTA buttons */}
-      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
+      <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", gap: 10, width: isMobile ? "100%" : "auto", alignItems: "center" }}>
         <motion.a href="/user-reports" whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}
-          style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "11px 20px", borderRadius: 12, background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.28)", fontSize: 13, fontWeight: 600, color: "#a5b4fc", textDecoration: "none", cursor: "pointer" }}>
+          style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "11px 20px", borderRadius: 12, background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.28)", fontSize: 13, fontWeight: 600, color: "#a5b4fc", textDecoration: "none", cursor: "pointer", width: isMobile ? "100%" : "auto" }}>
           <Eye size={14} />View My Reports
         </motion.a>
         <motion.button onClick={onNew} whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}
-          style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "11px 20px", borderRadius: 12, background: "linear-gradient(135deg,#6366f1,#8b5cf6)", border: "none", fontSize: 13, fontWeight: 600, color: "#fff", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
+          style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "11px 20px", borderRadius: 12, background: "linear-gradient(135deg,#6366f1,#8b5cf6)", border: "none", fontSize: 13, fontWeight: 600, color: "#fff", cursor: "pointer", fontFamily: "'DM Sans',sans-serif", width: isMobile ? "100%" : "auto" }}>
           <Send size={14} />Report Another Item
         </motion.button>
       </div>
@@ -510,14 +527,28 @@ function SuccessScreen({ onNew }: { onNew: () => void }) {
 // MAIN PAGE
 // ─────────────────────────────────────────────────────────────────────────────
 export default function ReportLost() {
-  const [step,      setStep]      = useState(1)
-  const [data,      setData]      = useState<FormData>(INITIAL)
-  const [errors,    setErrors]    = useState<Partial<Record<keyof FormData, string>>>({})
-  const [submitting,setSubmitting]= useState(false)
-  const [done,      setDone]      = useState(false)
-  const [dir,       setDir]       = useState(1)   // animation direction
+  // ── Store ──────────────────────────────────────────────────────────────────
+  const { submitting, submitError, submitSuccess, submitReport, resetSubmit } = useReportStore()
+
+  // ── Responsive ────────────────────────────────────────────────────────────
+  const isMobile = useIsMobile(600)
+
+  // ── Local UI state ─────────────────────────────────────────────────────────
+  const [step,   setStep]   = useState(1)
+  const [data,   setData]   = useState<FormData>(INITIAL)
+  const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({})
+  const [dir,    setDir]    = useState(1)   // slide animation direction
 
   const TOTAL_STEPS = 5  // 4 form steps + review
+
+  // Watch store success → switch to done screen
+  const done = submitSuccess
+
+  // Reset store state when component unmounts so re-visiting the page starts fresh
+  useEffect(() => {
+    resetSubmit()
+    return () => { resetSubmit() }
+  }, [])
 
   function set(k: keyof FormData, v: any) {
     setData(p => ({ ...p, [k]: v }))
@@ -555,26 +586,38 @@ export default function ReportLost() {
   }
 
   async function handleSubmit() {
-    setSubmitting(true)
-    // Simulate API call
-    await new Promise(r => setTimeout(r, 1600))
-    setSubmitting(false)
-    setDone(true)
+    await submitReport({
+      item_name:               data.item_name,
+      category:                data.category as Category,
+      location:                data.location,
+      date_lost:               data.date_lost,
+      description:             data.description,
+      location_detail:         data.location_detail   || undefined,
+      time_lost:               data.time_lost         || undefined,
+      brand:                   data.brand             || undefined,
+      color:                   data.color             || undefined,
+      distinguishing_features: data.distinguishing    || undefined,
+      reward:                  data.reward            || undefined,
+      contact_phone:           data.contact_phone     || undefined,
+      is_urgent:               data.urgent,
+      images:                  data.images.length > 0 ? data.images : undefined,
+    })
   }
 
   function reset() {
     setData(INITIAL)
     setErrors({})
     setStep(1)
-    setDone(false)
+    setDir(1)
+    resetSubmit()
   }
 
   const stepContent = [
-    <StepItemInfo  key={1} data={data} set={set} errors={errors} />,
-    <StepLocation  key={2} data={data} set={set} errors={errors} />,
-    <StepDetails   key={3} data={data} set={set} errors={errors} />,
+    <StepItemInfo  key={1} data={data} set={set} errors={errors} isMobile={isMobile} />,
+    <StepLocation  key={2} data={data} set={set} errors={errors} isMobile={isMobile} />,
+    <StepDetails   key={3} data={data} set={set} errors={errors} isMobile={isMobile} />,
     <StepImages    key={4} data={data} set={set} />,
-    <StepReview    key={5} data={data} />,
+    <StepReview    key={5} data={data} isMobile={isMobile} />,
   ]
 
   const stepTitles = [
@@ -593,7 +636,7 @@ export default function ReportLost() {
   ]
 
   return (
-    <div style={{ minHeight: "100vh", background: "#06060f", color: "white", fontFamily: "'DM Sans',sans-serif", padding: "24px 16px 48px" }}>
+    <div style={{ marginLeft:- 20, minHeight: "100vh", background: "#06060f", color: "white", fontFamily: "'DM Sans',sans-serif", padding: isMobile ? "16px 12px 40px" : "24px 28px 48px" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600;700&display=swap');
         .syne { font-family: 'Syne', sans-serif; }
@@ -617,7 +660,7 @@ export default function ReportLost() {
         .rl-err-msg { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #f87171; margin-top: 6px; }
       `}</style>
 
-      <div style={{ maxWidth: 600, margin: "0 auto" }}>
+      <div style={{ width: "100%" }}>
 
         {/* ── Page header ── */}
         <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 28 }}>
@@ -625,7 +668,7 @@ export default function ReportLost() {
             <PackageSearch size={18} color="white" />
           </div>
           <div>
-            <h1 className="syne" style={{ fontSize: 22, fontWeight: 800, letterSpacing: "-0.5px", color: "#fff", margin: 0 }}>Report Lost Item</h1>
+            <h1 className="syne" style={{ fontSize: isMobile ? 18 : 22, fontWeight: 800, letterSpacing: "-0.5px", color: "#fff", margin: 0 }}>Report Lost Item</h1>
             <p style={{ fontSize: 12, color: "#4b5563", margin: 0 }}>Help us help you find what you've lost</p>
           </div>
         </div>
@@ -647,7 +690,7 @@ export default function ReportLost() {
                           borderColor: done_s ? "rgba(52,211,153,0.5)" : active ? "rgba(99,102,241,0.6)" : "rgba(255,255,255,0.1)",
                           boxShadow: active ? "0 0 16px rgba(99,102,241,0.35)" : "none",
                         }}
-                        style={{ width: 32, height: 32, borderRadius: "50%", border: "1px solid", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.3s" }}>
+                        style={{ width: isMobile ? 28 : 32, height: isMobile ? 28 : 32, borderRadius: "50%", border: "1px solid", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.3s" }}>
                         {done_s
                           ? <CheckCircle size={14} color="white" />
                           : <s.icon size={13} color={active ? "white" : "#374151"} />}
@@ -677,16 +720,16 @@ export default function ReportLost() {
           style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, overflow: "hidden" }}>
 
           {done ? (
-            <div style={{ padding: "36px 28px" }}>
-              <SuccessScreen onNew={reset} />
+            <div style={{ padding: isMobile ? "24px 18px" : "36px 28px" }}>
+              <SuccessScreen onNew={reset} isMobile={isMobile} />
             </div>
           ) : (
             <>
               {/* Card header */}
-              <div style={{ padding: "22px 26px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.01)" }}>
+              <div style={{ padding: isMobile ? "16px 18px 14px" : "22px 26px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.01)" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <div>
-                    <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", fontFamily: "'Syne',sans-serif", letterSpacing: "-0.3px", marginBottom: 2 }}>
+                    <div style={{ fontSize: isMobile ? 14 : 18, fontWeight: 800, color: "#fff", fontFamily: "'Syne',sans-serif", letterSpacing: "-0.3px", marginBottom: 2 }}>
                       {stepTitles[step - 1]}
                     </div>
                     <div style={{ fontSize: 12, color: "#4b5563" }}>{stepSubs[step - 1]}</div>
@@ -707,7 +750,7 @@ export default function ReportLost() {
               </div>
 
               {/* Step content — animated */}
-              <div style={{ padding: "24px 26px", minHeight: 320, overflow: "hidden" }}>
+              <div style={{ padding: isMobile ? "18px 16px" : "24px 26px", minHeight: 300, overflow: "hidden" }}>
                 <AnimatePresence mode="wait" custom={dir}>
                   <motion.div
                     key={step}
@@ -723,12 +766,28 @@ export default function ReportLost() {
               </div>
 
               {/* Footer navigation */}
-              <div style={{ padding: "16px 26px 22px", borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+              <div style={{ padding: isMobile ? "14px 16px 18px" : "16px 26px 22px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+                {/* Submit error banner — only on review step */}
+                <AnimatePresence>
+                  {step === TOTAL_STEPS && submitError && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                      animate={{ opacity: 1, height: "auto", marginBottom: 12 }}
+                      exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                      style={{ overflow: "hidden" }}>
+                      <div style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "11px 14px", borderRadius: 10, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)" }}>
+                        <AlertTriangle size={14} color="#f87171" style={{ flexShrink: 0, marginTop: 1 }} />
+                        <span style={{ fontSize: 12, color: "#f87171", lineHeight: 1.5 }}>{submitError}</span>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
                 {/* Back */}
                 {step > 1 ? (
                   <motion.button whileHover={{ x: -2 }} whileTap={{ scale: 0.97 }} onClick={goBack}
                     style={{ display: "flex", alignItems: "center", gap: 6, padding: "10px 16px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.55)", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
-                    <ChevronLeft size={14} />Back
+                    <ChevronLeft size={14} />{!isMobile && "Back"}
                   </motion.button>
                 ) : (
                   <div />
@@ -738,7 +797,7 @@ export default function ReportLost() {
                 {step < TOTAL_STEPS ? (
                   <motion.button whileHover={{ y: -1, boxShadow: "0 8px 24px rgba(99,102,241,0.3)" }} whileTap={{ scale: 0.97 }} onClick={goNext}
                     style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 22px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#6366f1,#8b5cf6)", fontSize: 13, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: "'DM Sans',sans-serif", boxShadow: "0 4px 16px rgba(99,102,241,0.2)" }}>
-                    {step === 4 ? "Review Report" : "Continue"}
+                    {step === 4 ? (isMobile ? "Review" : "Review Report") : "Continue"}
                     <ChevronRight size={14} />
                   </motion.button>
                 ) : (
@@ -747,7 +806,7 @@ export default function ReportLost() {
                     whileTap={!submitting ? { scale: 0.97 } : {}}
                     onClick={handleSubmit}
                     disabled={submitting}
-                    style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 24px", borderRadius: 10, border: "none", background: submitting ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg,#10b981,#059669)", fontSize: 13, fontWeight: 700, color: submitting ? "rgba(255,255,255,0.3)" : "#fff", cursor: submitting ? "not-allowed" : "pointer", fontFamily: "'DM Sans',sans-serif", transition: "all 0.25s", boxShadow: "0 4px 16px rgba(16,185,129,0.2)" }}>
+                    style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "10px 24px", borderRadius: 10, border: "none", background: submitting ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg,#10b981,#059669)", fontSize: 13, fontWeight: 700, color: submitting ? "rgba(255,255,255,0.3)" : "#fff", cursor: submitting ? "not-allowed" : "pointer", fontFamily: "'DM Sans',sans-serif", transition: "all 0.25s", boxShadow: "0 4px 16px rgba(16,185,129,0.2)", flex: isMobile ? 1 : "none" }}>
                     {submitting ? (
                       <>
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ animation: "rl-spin 0.8s linear infinite" }}>
@@ -760,6 +819,7 @@ export default function ReportLost() {
                     )}
                   </motion.button>
                 )}
+                </div>
               </div>
             </>
           )}
