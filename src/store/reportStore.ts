@@ -7,12 +7,17 @@ import {
   deleteReport,
 } from "@/api/reportApi"
 import type {
-  LostReport,
-  LostReportListItem,
+  Report,
+  ReportListItem,
   CreateReportPayload,
   UpdateReportPayload,
   ReportStatus,
+  ReportType,
 } from "@/types/reportTypes"
+
+// backward-compat aliases used in this file
+type LostReport         = Report
+type LostReportListItem = ReportListItem
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  STATE SHAPE
@@ -40,8 +45,8 @@ interface ReportState {
 
   // ── Actions ────────────────────────────────────────────────────────────────
 
-  /** Fetch current user's reports. Optional status filter. */
-  fetchMyReports: (status?: ReportStatus) => Promise<void>
+  /** Fetch current user's reports. Optional filters: status and/or report type. */
+  fetchMyReports: (filters?: { status?: ReportStatus; type?: ReportType }) => Promise<void>
 
   /** Fetch one report by ID. */
   fetchReport: (id: number) => Promise<void>
@@ -88,10 +93,10 @@ export const useReportStore = create<ReportState>((set, get) => ({
   deleteError:   null,
 
   // ── fetchMyReports ─────────────────────────────────────────────────────────
-  fetchMyReports: async (status) => {
+  fetchMyReports: async (filters) => {
     set({ loadingList: true, listError: null })
     try {
-      const data = await getMyReports(status)
+      const data = await getMyReports(filters)
       set({
         reports:     data.results,
         reportCount: data.count,

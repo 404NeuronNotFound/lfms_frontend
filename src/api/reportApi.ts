@@ -6,9 +6,13 @@ import type {
   UpdateReportResponse,
   DeleteReportResponse,
   ReportListResponse,
-  LostReport,
+  Report,
   ReportStatus,
+  ReportType,
 } from "@/types/reportTypes"
+
+// backward-compat alias
+type LostReport = Report
 
 const BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000/api"
 
@@ -39,18 +43,21 @@ async function handleResponse<T>(res: Response): Promise<T> {
 function toFormData(payload: CreateReportPayload): FormData {
   const fd = new FormData()
 
+  // report_type (lost | found) — required
+  fd.append("report_type", payload.report_type ?? "lost")
+
   // Required fields
   fd.append("item_name",   payload.item_name)
   fd.append("category",    payload.category)
   fd.append("location",    payload.location)
-  fd.append("date_lost",   payload.date_lost)
+  fd.append("date_event",  payload.date_event)   // replaces date_lost
   fd.append("description", payload.description)
 
   // Optional fields — only append if the value is non-empty
   if (payload.location_detail?.trim())
     fd.append("location_detail",         payload.location_detail.trim())
-  if (payload.time_lost)
-    fd.append("time_lost",               payload.time_lost)
+  if (payload.time_event)
+    fd.append("time_event",              payload.time_event)              // replaces time_lost
   if (payload.brand?.trim())
     fd.append("brand",                   payload.brand.trim())
   if (payload.color?.trim())
@@ -61,6 +68,8 @@ function toFormData(payload: CreateReportPayload): FormData {
     fd.append("reward",                  payload.reward.trim())
   if (payload.contact_phone?.trim())
     fd.append("contact_phone",           payload.contact_phone.trim())
+  if (payload.found_stored_at?.trim())
+    fd.append("found_stored_at",         payload.found_stored_at.trim())  // found flow only
 
   // Boolean — Django expects string "true"/"false" in form data
   fd.append("is_urgent", payload.is_urgent ? "true" : "false")
@@ -97,10 +106,11 @@ export async function createReport(
  * Returns the current user's own reports (newest first).
  * Optional ?status= filter.
  */
-export async function getMyReports(status?: ReportStatus): Promise<ReportListResponse> {
-  const url = status
-    ? `${BASE}/reports/?status=${status}`
-    : `${BASE}/reports/`
+export async function getMyReports(filters?: { status?: ReportStatus; type?: ReportType }): Promise<ReportListResponse> {
+  const params = new URLSearchParams()
+  if (filters?.status) params.set("status", filters.status)
+  if (filters?.type)   params.set("type",   filters.type)
+  const url = params.toString() ? `${BASE}/reports/?${params}` : `${BASE}/reports/`
   const res = await authFetch(url)
   return handleResponse<ReportListResponse>(res)
 }

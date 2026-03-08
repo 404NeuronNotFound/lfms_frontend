@@ -38,8 +38,8 @@ interface FormData {
   // Step 2 — Where & when
   location:        string
   location_detail: string
-  date_lost:       string
-  time_lost:       string
+  date_event:      string
+  time_event:      string
   // Step 3 — Description & extras
   description:     string
   distinguishing:  string
@@ -52,7 +52,7 @@ interface FormData {
 
 const INITIAL: FormData = {
   item_name: "", category: "", brand: "", color: "",
-  location: "", location_detail: "", date_lost: "", time_lost: "",
+  location: "", location_detail: "", date_event: "", time_event: "",
   description: "", distinguishing: "", reward: "", contact_phone: "", urgent: false,
   images: [],
 }
@@ -213,14 +213,14 @@ function StepLocation({ data, set, errors, isMobile }: { data: FormData; set: (k
             <Calendar size={14} color="#4b5563" style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
             <input
               type="date"
-              className={`rl-input${errors.date_lost ? " rl-error" : ""}`}
+              className={`rl-input${errors.date_event ? " rl-error" : ""}`}
               style={{ paddingLeft: 38 }}
               max={today}
-              value={data.date_lost}
-              onChange={e => set("date_lost", e.target.value)}
+              value={data.date_event}
+              onChange={e => set("date_event", e.target.value)}
             />
           </div>
-          {errors.date_lost && <div className="rl-err-msg"><AlertTriangle size={11} />{errors.date_lost}</div>}
+          {errors.date_event && <div className="rl-err-msg"><AlertTriangle size={11} />{errors.date_event}</div>}
         </div>
         <div>
           <FieldLabel>Approximate Time</FieldLabel>
@@ -230,8 +230,8 @@ function StepLocation({ data, set, errors, isMobile }: { data: FormData; set: (k
               type="time"
               className="rl-input"
               style={{ paddingLeft: 38 }}
-              value={data.time_lost}
-              onChange={e => set("time_lost", e.target.value)}
+              value={data.time_event}
+              onChange={e => set("time_event", e.target.value)}
             />
           </div>
           <FieldHint>Optional but helpful</FieldHint>
@@ -443,8 +443,8 @@ function StepReview({ data, isMobile }: { data: FormData; isMobile: boolean }) {
       <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 10 }}>
         {[
           { icon: MapPin,   label: "Location",    value: [data.location, data.location_detail].filter(Boolean).join(", ") || "—" },
-          { icon: Calendar, label: "Date Lost",   value: data.date_lost ? new Date(data.date_lost).toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"}) : "—" },
-          { icon: Clock,    label: "Time",        value: data.time_lost || "Not specified" },
+          { icon: Calendar, label: "Date Lost",   value: data.date_event ? new Date(data.date_event).toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"}) : "—" },
+          { icon: Clock,    label: "Time",        value: data.time_event || "Not specified" },
           { icon: Image,    label: "Photos",      value: `${data.images.length} image${data.images.length !== 1 ? "s" : ""} attached` },
           { icon: DollarSign,label:"Reward",      value: data.reward || "None" },
           { icon: Phone,    label: "Contact",     value: data.contact_phone || "Not provided" },
@@ -468,9 +468,9 @@ function StepReview({ data, isMobile }: { data: FormData; isMobile: boolean }) {
       )}
 
       {/* Consent */}
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "12px 14px", borderRadius: 12, background: "rgba(52,211,153,0.06)", border: "1px solid rgba(52,211,153,0.18)" }}>
-        <CheckCircle size={14} color="#34d399" style={{ flexShrink: 0, marginTop: 1 }} />
-        <p style={{ fontSize: 12, color: "#6ee7b7", lineHeight: 1.65, margin: 0 }}>
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "12px 14px", borderRadius: 12, background: "rgba(99,102,241,0.06)", border: "1px solid rgba(99,102,241,0.2)" }}>
+        <CheckCircle size={14} color="#818cf8" style={{ flexShrink: 0, marginTop: 1 }} />
+        <p style={{ fontSize: 12, color: "#a5b4fc", lineHeight: 1.65, margin: 0 }}>
           By submitting, you confirm all information is accurate and agree to Findify's terms. Your report will be reviewed and published within 24 hours.
         </p>
       </div>
@@ -490,14 +490,14 @@ function SuccessScreen({ onNew, isMobile }: { onNew: () => void; isMobile: boole
         <motion.div
           initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
           transition={{ type: "spring", damping: 12, stiffness: 160 }}
-          style={{ width: 80, height: 80, borderRadius: "50%", background: "rgba(52,211,153,0.1)", border: "1px solid rgba(52,211,153,0.3)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <CheckCircle size={36} color="#34d399" />
+          style={{ width: 80, height: 80, borderRadius: "50%", background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.3)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <CheckCircle size={36} color="#818cf8" />
         </motion.div>
         {[0,1,2].map(i => (
           <motion.div key={i}
             initial={{ scale: 1, opacity: 0.3 - i * 0.08 }} animate={{ scale: 1.7 + i * 0.45, opacity: 0 }}
             transition={{ duration: 1.4, delay: i * 0.3, repeat: Infinity, ease: "easeOut" }}
-            style={{ position: "absolute", inset: 0, borderRadius: "50%", border: "1px solid rgba(52,211,153,0.35)" }} />
+            style={{ position: "absolute", inset: 0, borderRadius: "50%", border: "1px solid rgba(99,102,241,0.35)" }} />
         ))}
       </div>
 
@@ -564,7 +564,7 @@ export default function ReportLost() {
     }
     if (s === 2) {
       if (!data.location.trim()) e.location = "Location is required"
-      if (!data.date_lost)       e.date_lost = "Date is required"
+      if (!data.date_event)      e.date_event = "Date is required"
     }
     if (s === 3) {
       if (!data.description.trim() || data.description.trim().length < 20)
@@ -590,10 +590,11 @@ export default function ReportLost() {
       item_name:               data.item_name,
       category:                data.category as Category,
       location:                data.location,
-      date_lost:               data.date_lost,
+      report_type:             "lost",
+      date_event:              data.date_event,
       description:             data.description,
       location_detail:         data.location_detail   || undefined,
-      time_lost:               data.time_lost         || undefined,
+      time_event:              data.time_event         || undefined,
       brand:                   data.brand             || undefined,
       color:                   data.color             || undefined,
       distinguishing_features: data.distinguishing    || undefined,
@@ -636,7 +637,7 @@ export default function ReportLost() {
   ]
 
   return (
-    <div style={{ marginLeft:- 20, minHeight: "100vh", background: "#06060f", color: "white", fontFamily: "'DM Sans',sans-serif", padding: isMobile ? "16px 12px 40px" : "24px 28px 48px" }}>
+    <div style={{ minHeight: "100vh", background: "#06060f", color: "white", fontFamily: "'DM Sans',sans-serif", padding: isMobile ? "0 0 40px" : "0 0 48px" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600;700&display=swap');
         .syne { font-family: 'Syne', sans-serif; }
@@ -664,7 +665,7 @@ export default function ReportLost() {
 
         {/* ── Page header ── */}
         <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 28 }}>
-          <div style={{ width: 42, height: 42, borderRadius: 12, background: "linear-gradient(135deg,#f59e0b,#d97706)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 16px rgba(245,158,11,0.3)", flexShrink: 0 }}>
+          <div style={{ width: 42, height: 42, borderRadius: 12, background: "linear-gradient(135deg,#6366f1,#8b5cf6)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 16px rgba(99,102,241,0.3)", flexShrink: 0 }}>
             <PackageSearch size={18} color="white" />
           </div>
           <div>
@@ -686,8 +687,8 @@ export default function ReportLost() {
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
                       <motion.div
                         animate={{
-                          background: done_s ? "linear-gradient(135deg,#34d399,#059669)" : active ? "linear-gradient(135deg,#6366f1,#8b5cf6)" : "rgba(255,255,255,0.06)",
-                          borderColor: done_s ? "rgba(52,211,153,0.5)" : active ? "rgba(99,102,241,0.6)" : "rgba(255,255,255,0.1)",
+                          background: done_s ? "linear-gradient(135deg,#6366f1,#8b5cf6)" : active ? "linear-gradient(135deg,#6366f1,#8b5cf6)" : "rgba(255,255,255,0.06)",
+                          borderColor: done_s ? "rgba(99,102,241,0.5)" : active ? "rgba(99,102,241,0.6)" : "rgba(255,255,255,0.1)",
                           boxShadow: active ? "0 0 16px rgba(99,102,241,0.35)" : "none",
                         }}
                         style={{ width: isMobile ? 28 : 32, height: isMobile ? 28 : 32, borderRadius: "50%", border: "1px solid", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.3s" }}>
@@ -697,7 +698,7 @@ export default function ReportLost() {
                       </motion.div>
                     </div>
                     {i < STEPS.length - 1 && (
-                      <div style={{ flex: 1, height: 2, margin: "0 4px", borderRadius: 1, background: done_s ? "linear-gradient(90deg,#34d399,rgba(52,211,153,0.3))" : "rgba(255,255,255,0.07)", transition: "all 0.4s" }} />
+                      <div style={{ flex: 1, height: 2, margin: "0 4px", borderRadius: 1, background: done_s ? "linear-gradient(90deg,#6366f1,rgba(99,102,241,0.3))" : "rgba(255,255,255,0.07)", transition: "all 0.4s" }} />
                     )}
                   </div>
                 )
@@ -706,7 +707,7 @@ export default function ReportLost() {
             {/* Step labels */}
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               {STEPS.map(s => (
-                <div key={s.id} style={{ fontSize: 9, fontWeight: 600, color: step === s.id ? "#a5b4fc" : step > s.id ? "#34d399" : "#374151", textTransform: "uppercase", letterSpacing: 0.8, textAlign: "center", flex: 1 }}>
+                <div key={s.id} style={{ fontSize: 9, fontWeight: 600, color: step === s.id ? "#a5b4fc" : step > s.id ? "#818cf8" : "#374151", textTransform: "uppercase", letterSpacing: 0.8, textAlign: "center", flex: 1 }}>
                   {s.label}
                 </div>
               ))}
@@ -744,7 +745,7 @@ export default function ReportLost() {
                   <motion.div
                     animate={{ width: `${(step / TOTAL_STEPS) * 100}%` }}
                     transition={{ type: "spring", damping: 22, stiffness: 180 }}
-                    style={{ height: "100%", borderRadius: 2, background: step === TOTAL_STEPS ? "linear-gradient(90deg,#34d399,#6ee7b7)" : "linear-gradient(90deg,#6366f1,#8b5cf6)" }}
+                    style={{ height: "100%", borderRadius: 2, background: "linear-gradient(90deg,#6366f1,#8b5cf6)" }}
                   />
                 </div>
               </div>
@@ -802,11 +803,11 @@ export default function ReportLost() {
                   </motion.button>
                 ) : (
                   <motion.button
-                    whileHover={!submitting ? { y: -1, boxShadow: "0 8px 24px rgba(52,211,153,0.3)" } : {}}
+                    whileHover={!submitting ? { y: -1, boxShadow: "0 8px 24px rgba(99,102,241,0.35)" } : {}}
                     whileTap={!submitting ? { scale: 0.97 } : {}}
                     onClick={handleSubmit}
                     disabled={submitting}
-                    style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "10px 24px", borderRadius: 10, border: "none", background: submitting ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg,#10b981,#059669)", fontSize: 13, fontWeight: 700, color: submitting ? "rgba(255,255,255,0.3)" : "#fff", cursor: submitting ? "not-allowed" : "pointer", fontFamily: "'DM Sans',sans-serif", transition: "all 0.25s", boxShadow: "0 4px 16px rgba(16,185,129,0.2)", flex: isMobile ? 1 : "none" }}>
+                    style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "10px 24px", borderRadius: 10, border: "none", background: submitting ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg,#6366f1,#8b5cf6)", fontSize: 13, fontWeight: 700, color: submitting ? "rgba(255,255,255,0.3)" : "#fff", cursor: submitting ? "not-allowed" : "pointer", fontFamily: "'DM Sans',sans-serif", transition: "all 0.25s", boxShadow: "0 4px 16px rgba(99,102,241,0.2)", flex: isMobile ? 1 : "none" }}>
                     {submitting ? (
                       <>
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ animation: "rl-spin 0.8s linear infinite" }}>

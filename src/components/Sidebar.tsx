@@ -17,32 +17,32 @@ const ADMIN_NAV = [
   {
     group: "Overview",
     items: [
-      { icon: LayoutDashboard, label: "Dashboard",    href: "/admin-dashboard",  badge: null },
-      { icon: BarChart3,       label: "Analytics",    href: "/admin-analytics",  badge: null },
+      { icon: LayoutDashboard, label: "Dashboard",   href: "/admin-dashboard", badge: null },
+      { icon: BarChart3,       label: "Analytics",   href: "/admin-analytics", badge: null },
     ],
   },
   {
     group: "Management",
     items: [
-      { icon: ClipboardList,  label: "All Reports",   href: "/admin-all-reports",    badge: "128" },
-      { icon: PackageSearch,  label: "Lost Items",    href: "/admin-lost",       badge: "54"  },
-      { icon: Tag,            label: "Found Items",   href: "/admin-found",      badge: "74"  },
-      { icon: CheckCircle,    label: "Claimed",       href: "/admin-claimed",    badge: null  },
+      { icon: ClipboardList,  label: "All Reports",  href: "/admin-all-reports", badge: null },
+      { icon: PackageSearch,  label: "Lost Items",   href: "/admin-lost",        badge: null },
+      { icon: Tag,            label: "Found Items",  href: "/admin-found",       badge: null },
+      { icon: CheckCircle,    label: "Claimed",      href: "/admin-claimed",     badge: null },
     ],
   },
   {
     group: "Users",
     items: [
-      { icon: Users,          label: "All Users",     href: "/admin-all-users",  badge: null },
-      { icon: ShieldCheck,    label: "Verifications", href: "/admin-verify",     badge: "7"  },
-      { icon: MessageSquare,  label: "Messages",      href: "/admin-messages",   badge: "3"  },
+      { icon: Users,          label: "All Users",    href: "/admin-all-users",   badge: null },
+      { icon: ShieldCheck,    label: "Verifications",href: "/admin-verify",      badge: null },
+      { icon: MessageSquare,  label: "Messages",     href: "/admin-messages",    badge: null },
     ],
   },
   {
     group: "System",
     items: [
-      { icon: FileText,       label: "Audit Logs",    href: "/admin-logs",       badge: null },
-      { icon: Settings,       label: "Settings",      href: "/admin-settings",   badge: null },
+      { icon: FileText,       label: "Audit Logs",   href: "/admin-logs",        badge: null },
+      { icon: Settings,       label: "Settings",     href: "/admin-settings",    badge: null },
     ],
   },
 ]
@@ -51,25 +51,30 @@ const USER_NAV = [
   {
     group: "Home",
     items: [
-      { icon: LayoutDashboard, label: "Dashboard",    href: "/user-dashboard",     badge: null },
-      { icon: Bell,            label: "Notifications",href: "/user-notifications", badge: "2"  },
+      { icon: LayoutDashboard, label: "Dashboard",     href: "/user-dashboard",     badge: null },
+      { icon: Bell,            label: "Notifications", href: "/user-notifications", badge: null },
     ],
   },
   {
-    group: "Items",
+    group: "Reports",
     items: [
-      { icon: PackagePlus,    label: "Report Lost",   href: "/user-report-lost",   badge: null },
-      { icon: PackageSearch,  label: "Browse Found",  href: "/user-browse",        badge: null },
-      { icon: ClipboardList,  label: "My Reports",    href: "/user-my-reports",       badge: null },
-      { icon: CheckCircle,    label: "My Claims",     href: "/user-claims",        badge: null },
+      { icon: PackagePlus,    label: "Report Lost",    href: "/user-report-lost",   badge: null },
+      { icon: PackageSearch,  label: "Report Found",   href: "/user-report-found",  badge: null },
+      { icon: ClipboardList,  label: "My Reports",     href: "/user-my-reports",    badge: null },
+      { icon: CheckCircle,    label: "My Claims",      href: "/user-claims",        badge: null },
+    ],
+  },
+  {
+    group: "Discover",
+    items: [
+      { icon: Search,         label: "Browse Items",   href: "/user-browse",        badge: null },
     ],
   },
   {
     group: "Account",
     items: [
-      { icon: MapPin,         label: "My Location",   href: "/user-location",      badge: null },
-      { icon: MessageSquare,  label: "Messages",      href: "/user-messages",      badge: "1"  },
-      { icon: Settings,       label: "Settings",      href: "/user-settings",      badge: null },
+      { icon: MessageSquare,  label: "Messages",       href: "/user-messages",      badge: null },
+      { icon: Settings,       label: "Settings",       href: "/user-settings",      badge: null },
     ],
   },
 ]
@@ -108,13 +113,13 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
   const { user, role, logout } = useAuthStore()
   const { profile, fetchProfile } = useSettingsStore()
 
-  const [mobileOpen,        setMobileOpen]        = useState(false)
-  const [activeHref,        setActiveHref]        = useState(
+  const [mobileOpen,      setMobileOpen]      = useState(false)
+  const [activeHref,      setActiveHref]      = useState(
     typeof window !== "undefined" ? window.location.pathname : ""
   )
-  const [isMobile,          setIsMobile]          = useState(false)
-  const [showProfileCard,   setShowProfileCard]   = useState(false)
-  const [showLogoutModal,   setShowLogoutModal]   = useState(false)
+  const [isMobile,        setIsMobile]        = useState(false)
+  const [showProfileCard, setShowProfileCard] = useState(false)
+  const [showLogoutModal, setShowLogoutModal] = useState(false)
 
   useEffect(() => {
     const check = () => {
@@ -143,7 +148,6 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
   const avatarSrc    = profile?.profile?.avatar ?? null
   const settingsHref = isAdmin ? "/admin-settings" : "/user-settings"
 
-  // ── Confirm logout ────────────────────────────────────────────────────
   function handleLogout() {
     setShowLogoutModal(false)
     setShowProfileCard(false)
@@ -177,7 +181,6 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
               fontFamily: "'DM Sans',sans-serif", color: "white",
             }}
           >
-            {/* Avatar + name */}
             <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
               <div style={{ position: "relative", flexShrink: 0 }}>
                 <SidebarAvatar src={avatarSrc} initials={initials} size={52} />
@@ -198,7 +201,6 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
               </div>
             </div>
 
-            {/* Profile details */}
             {(profile?.profile?.address || profile?.profile?.phone_number || profile?.profile?.bio) && (
               <div style={{ borderTop: "1px solid rgba(255,255,255,0.07)", paddingTop: 14, marginBottom: 14, display: "flex", flexDirection: "column", gap: 8 }}>
                 {profile.profile.phone_number && (
@@ -225,14 +227,12 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
               </div>
             )}
 
-            {/* Joined date */}
             {profile?.date_joined && (
               <div style={{ fontSize: 11, color: "#4b5563", marginBottom: 14 }}>
                 Member since {new Date(profile.date_joined).toLocaleDateString("en-US", { month: "long", year: "numeric" })}
               </div>
             )}
 
-            {/* Actions */}
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               <a href={settingsHref}
                 onClick={() => setShowProfileCard(false)}
@@ -328,7 +328,6 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
 
       {/* ── User profile section at bottom ── */}
       <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", padding: collapsed ? "12px 8px" : "12px" }}>
-
         {collapsed ? (
           <motion.button whileTap={{ scale: 0.95 }}
             onClick={() => setShowProfileCard(v => !v)}
@@ -368,7 +367,6 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
           </motion.button>
         )}
 
-        {/* Logout button */}
         <motion.button whileTap={{ scale: 0.97 }}
           onClick={() => setShowLogoutModal(true)}
           style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: collapsed ? "center" : "flex-start", gap: 8, padding: collapsed ? "10px" : "9px 10px", borderRadius: 10, background: "transparent", border: "1px solid transparent", color: "rgba(255,255,255,0.35)", cursor: "pointer", fontSize: 13, transition: "all 0.2s ease", fontFamily: "'DM Sans',sans-serif" }}
@@ -392,14 +390,12 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
         nav::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.3); border-radius: 2px; }
       `}</style>
 
-      {/* Logout confirmation modal */}
       <LogoutModal
         open={showLogoutModal}
         onClose={() => setShowLogoutModal(false)}
         onConfirm={handleLogout}
       />
 
-      {/* Mobile hamburger */}
       {isMobile && (
         <button onClick={() => setMobileOpen(true)}
           style={{ position: "fixed", top: 16, left: 16, zIndex: 60, width: 40, height: 40, borderRadius: 10, background: "rgba(6,6,15,0.9)", backdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "white" }}>
@@ -407,10 +403,8 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
         </button>
       )}
 
-      {/* Profile popover */}
       <ProfileCard />
 
-      {/* Mobile drawer */}
       <AnimatePresence>
         {isMobile && mobileOpen && (
           <>
@@ -431,7 +425,6 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
         )}
       </AnimatePresence>
 
-      {/* Desktop sidebar */}
       {!isMobile && (
         <motion.aside
           animate={{ width: collapsed ? 64 : 240 }}

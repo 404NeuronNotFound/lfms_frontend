@@ -8,7 +8,11 @@ import {
   RefreshCw, Plus, Trash2, Edit3, Info, ShieldCheck,
 } from "lucide-react"
 import { useReportStore } from "@/store/reportStore"
-import type { LostReportListItem, LostReport, ReportStatus, ReportCategory } from "@/types/reportTypes"
+import type { ReportListItem, Report, ReportStatus, ReportCategory, ReportType } from "@/types/reportTypes"
+
+// backward-compat aliases
+type LostReportListItem = ReportListItem
+type LostReport         = Report
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  RESPONSIVE HOOK
@@ -57,6 +61,13 @@ const STATUS_FILTERS: { value: "all" | ReportStatus; label: string }[] = [
   { value: "claimed",     label: "Claimed" },
   { value: "closed",      label: "Closed" },
   { value: "rejected",    label: "Rejected" },
+]
+
+
+const TYPE_FILTERS: { value: "all" | ReportType; label: string }[] = [
+  { value: "all",   label: "All Types" },
+  { value: "lost",  label: "Lost" },
+  { value: "found", label: "Found" },
 ]
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -222,7 +233,7 @@ function DetailDrawer({
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   {canEdit && (
-                    <motion.a href={`/report-lost/edit/${r?.id}`} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                    <motion.a href={`/report-${r?.report_type ?? "lost"}/edit/${r?.id}`} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                       style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 10px", borderRadius: 8, background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.25)", fontSize: 11, fontWeight: 600, color: "#a5b4fc", cursor: "pointer", textDecoration: "none" }}>
                       <Edit3 size={11} />Edit
                     </motion.a>
@@ -265,10 +276,10 @@ function DetailDrawer({
               <div style={{ padding: isMobile ? "16px 18px 40px" : "20px 24px 40px", display: "flex", flexDirection: "column", gap: 22 }}>
 
                 {/* ── Hero: item identity ── */}
-                <div style={{ padding: "18px", borderRadius: 16, background: "linear-gradient(135deg,rgba(99,102,241,0.1),rgba(139,92,246,0.06))", border: "1px solid rgba(99,102,241,0.2)" }}>
+                <div style={{ padding: "18px", borderRadius: 16, background: r.report_type === "found" ? "linear-gradient(135deg,rgba(16,185,129,0.1),rgba(5,150,105,0.06))" : "linear-gradient(135deg,rgba(99,102,241,0.1),rgba(139,92,246,0.06))", border: r.report_type === "found" ? "1px solid rgba(16,185,129,0.2)" : "1px solid rgba(99,102,241,0.2)" }}>
                   <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
                     <div style={{ width: 48, height: 48, borderRadius: 14, background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <CatIcon size={20} color="#818cf8" />
+                      <CatIcon size={20} color={r.report_type === "found" ? "#34d399" : "#818cf8"} />
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap", marginBottom: 6 }}>
@@ -301,7 +312,7 @@ function DetailDrawer({
                           <s.icon size={11} color="#4b5563" />
                           <span style={{ fontSize: 9, color: "#374151", textTransform: "uppercase", letterSpacing: 1, fontWeight: 700 }}>{s.label}</span>
                         </div>
-                        <div style={{ fontSize: 14, fontWeight: 800, color: "#a5b4fc", fontFamily: "'Syne',sans-serif" }}>{s.value}</div>
+                        <div style={{ fontSize: 14, fontWeight: 800, color: r.report_type === "found" ? "#34d399" : "#a5b4fc", fontFamily: "'Syne',sans-serif" }}>{s.value}</div>
                       </div>
                     ))}
                   </div>
@@ -346,13 +357,14 @@ function DetailDrawer({
 
                 {/* ── Location & date ── */}
                 <div>
-                  <SectionLabel>Where & When</SectionLabel>
+                  <SectionLabel>{r.report_type === "found" ? "Where & When Found" : "Where & When Lost"}</SectionLabel>
                   <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                     <InfoRow icon={MapPin} label="Location">
                       {r.location}{r.location_detail ? ` — ${r.location_detail}` : ""}
                     </InfoRow>
-                    <InfoRow icon={Calendar} label="Date Lost">{fmtDate(r.date_event)}</InfoRow>
-                    {r.time_event && <InfoRow icon={Clock} label="Time Lost">{fmtTime(r.time_event)}</InfoRow>}
+                    <InfoRow icon={Calendar} label={r.report_type === "found" ? "Date Found" : "Date Lost"}>{fmtDate(r.date_event)}</InfoRow>
+                    {r.time_event && <InfoRow icon={Clock} label={r.report_type === "found" ? "Time Found" : "Time Lost"}>{fmtTime(r.time_event)}</InfoRow>}
+                    {r.report_type === "found" && r.found_stored_at && <InfoRow icon={MapPin} label="Item Currently At">{r.found_stored_at}</InfoRow>}
                   </div>
                 </div>
 
@@ -375,11 +387,11 @@ function DetailDrawer({
                 )}
 
                 {/* ── Contact & reward ── */}
-                {(r.reward || r.contact_phone) && (
+{((r.report_type !== "found" && r.reward) || r.contact_phone) && (
                   <div>
                     <SectionLabel>Contact & Reward</SectionLabel>
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                      {r.reward      && <InfoRow icon={DollarSign} label="Reward Offer">{r.reward}</InfoRow>}
+                      {r.report_type !== "found" && r.reward && <InfoRow icon={DollarSign} label="Reward Offer">{r.reward}</InfoRow>}
                       {r.contact_phone && <InfoRow icon={Phone}    label="Contact Phone">{r.contact_phone}</InfoRow>}
                     </div>
                   </div>
@@ -476,7 +488,16 @@ function ReportCard({ report, onClick, index }: { report: LostReportListItem; on
             <div style={{ flex: 1, minWidth: 0 }}>
               {/* Badges */}
               <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 6 }}>
-                <StatusPill status={report.status} />
+<StatusPill status={report.status} />
+                  <span style={{
+                    display: "inline-flex", alignItems: "center", gap: 3,
+                    padding: "2px 7px", borderRadius: 20, fontSize: 9, fontWeight: 700, letterSpacing: 0.4,
+                    background: report.report_type === "found" ? "rgba(16,185,129,0.1)"  : "rgba(99,102,241,0.1)",
+                    border:     report.report_type === "found" ? "1px solid rgba(16,185,129,0.22)" : "1px solid rgba(99,102,241,0.22)",
+                    color:      report.report_type === "found" ? "#34d399" : "#818cf8",
+                  }}>
+                    {report.report_type === "found" ? "FOUND" : "LOST"}
+                  </span>
                 {report.is_urgent && (
                   <span style={{ display: "inline-flex", alignItems: "center", gap: 3, padding: "2px 7px", borderRadius: 20, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.22)", fontSize: 9, fontWeight: 700, color: "#f87171" }}>
                     <Zap size={8} />URGENT
@@ -530,7 +551,7 @@ function ReportCard({ report, onClick, index }: { report: LostReportListItem; on
 // ─────────────────────────────────────────────────────────────────────────────
 //  EMPTY STATE
 // ─────────────────────────────────────────────────────────────────────────────
-function EmptyState({ filtered }: { filtered: boolean }) {
+function EmptyState({ filtered, typeFilter }: { filtered: boolean; typeFilter: "all" | ReportType }) {
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
       style={{ textAlign: "center", padding: "56px 24px" }}>
@@ -541,13 +562,23 @@ function EmptyState({ filtered }: { filtered: boolean }) {
         {filtered ? "No reports match this filter" : "No reports yet"}
       </div>
       <p style={{ fontSize: 13, color: "#374151", lineHeight: 1.65, maxWidth: 260, margin: "0 auto 24px" }}>
-        {filtered ? "Try a different status filter to see your reports." : "Once you file a lost item report, it will appear here."}
+        {filtered ? "Try a different filter to see your reports." : typeFilter === "found" ? "You haven't reported any found items yet." : "Once you file a report, it will appear here."}
       </p>
       {!filtered && (
-        <motion.a href="/report-lost" whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}
-          style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 20px", borderRadius: 12, background: "linear-gradient(135deg,#6366f1,#8b5cf6)", border: "none", fontSize: 13, fontWeight: 700, color: "#fff", textDecoration: "none" }}>
-          <Plus size={14} />Report a Lost Item
-        </motion.a>
+        <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+          {typeFilter !== "found" && (
+            <motion.a href="/user-report-lost" whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}
+              style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 20px", borderRadius: 12, background: "linear-gradient(135deg,#6366f1,#8b5cf6)", border: "none", fontSize: 13, fontWeight: 700, color: "#fff", textDecoration: "none" }}>
+              <Plus size={14} />Report Lost Item
+            </motion.a>
+          )}
+          {typeFilter !== "lost" && (
+            <motion.a href="/user-report-found" whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}
+              style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 20px", borderRadius: 12, background: "linear-gradient(135deg,#10b981,#059669)", border: "none", fontSize: 13, fontWeight: 700, color: "#fff", textDecoration: "none" }}>
+              <Plus size={14} />Report Found Item
+            </motion.a>
+          )}
+        </div>
       )}
     </motion.div>
   )
@@ -564,14 +595,18 @@ export default function MyReport() {
   } = useReportStore()
 
   // ── Local state ──────────────────────────────────────────────────────────
+  const [typeFilter,   setTypeFilter]   = useState<"all" | ReportType>("all")
   const [statusFilter, setStatusFilter] = useState<"all" | ReportStatus>("all")
   const [openId,       setOpenId]       = useState<number | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<{ id: number; name: string } | null>(null)
 
   // ── Fetch on mount + re-fetch when filter changes ────────────────────────
   useEffect(() => {
-    fetchMyReports(statusFilter === "all" ? undefined : statusFilter)
-  }, [statusFilter])
+    fetchMyReports({
+      status: statusFilter === "all" ? undefined : statusFilter,
+      type:   typeFilter   === "all" ? undefined : typeFilter,
+    })
+  }, [statusFilter, typeFilter])
 
   // ── Filtered list (filter is done server-side, but compute counts client-side) ──
   const displayed = reports
@@ -621,17 +656,25 @@ export default function MyReport() {
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             {/* Refresh */}
             <motion.button whileTap={{ scale: 0.95 }}
-              onClick={() => fetchMyReports(statusFilter === "all" ? undefined : statusFilter)}
+              onClick={() => fetchMyReports({ status: statusFilter === "all" ? undefined : statusFilter, type: typeFilter === "all" ? undefined : typeFilter })}
               style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.09)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
               <motion.div animate={loadingList ? { rotate: 360 } : {}} transition={{ duration: 1, repeat: loadingList ? Infinity : 0, ease: "linear" }}>
                 <RefreshCw size={14} color="#4b5563" />
               </motion.div>
             </motion.button>
             {/* New report */}
-            <motion.a href="/report-lost" whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}
-              style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 10, background: "linear-gradient(135deg,#6366f1,#8b5cf6)", border: "none", fontSize: 12, fontWeight: 700, color: "#fff", textDecoration: "none", boxShadow: "0 4px 14px rgba(99,102,241,0.25)" }}>
-              <Plus size={13} />{!isMobile && "New Report"}
-            </motion.a>
+            {typeFilter !== "found" && (
+              <motion.a href="/user-report-lost" whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}
+                style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 10, background: "linear-gradient(135deg,#6366f1,#8b5cf6)", border: "none", fontSize: 12, fontWeight: 700, color: "#fff", textDecoration: "none", boxShadow: "0 4px 14px rgba(99,102,241,0.25)" }}>
+                <Plus size={13} />{!isMobile && "Lost"}
+              </motion.a>
+            )}
+            {typeFilter !== "lost" && (
+              <motion.a href="/user-report-found" whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}
+                style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 10, background: "linear-gradient(135deg,#10b981,#059669)", border: "none", fontSize: 12, fontWeight: 700, color: "#fff", textDecoration: "none", boxShadow: "0 4px 14px rgba(16,185,129,0.25)" }}>
+                <Plus size={13} />{!isMobile && "Found"}
+              </motion.a>
+            )}
           </div>
         </div>
 
@@ -654,6 +697,19 @@ export default function MyReport() {
             ))}
           </motion.div>
         )}
+
+        {/* ── Type filter pills ── */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.08 }}
+          style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
+          {TYPE_FILTERS.map(f => (
+            <motion.button key={f.value} whileTap={{ scale: 0.96 }}
+              onClick={() => setTypeFilter(f.value)}
+              className={typeFilter === f.value ? "mr-pill-active" : ""}
+              style={{ padding: "5px 12px", borderRadius: 20, border: "1px solid rgba(255,255,255,0.1)", background: typeFilter === f.value && f.value === "found" ? "rgba(16,185,129,0.1)" : "rgba(255,255,255,0.03)", fontSize: 12, fontWeight: 500, color: "rgba(255,255,255,0.45)", cursor: "pointer", fontFamily: "'DM Sans',sans-serif", transition: "all 0.15s" }}>
+              {f.label}
+            </motion.button>
+          ))}
+        </motion.div>
 
         {/* ── Status filter pills ── */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
@@ -692,7 +748,7 @@ export default function MyReport() {
             {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}
           </div>
         ) : displayed.length === 0 ? (
-          <EmptyState filtered={statusFilter !== "all"} />
+          <EmptyState filtered={statusFilter !== "all"} typeFilter={typeFilter} />
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {displayed.map((r, i) => (
