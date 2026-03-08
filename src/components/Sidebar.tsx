@@ -68,7 +68,7 @@ const USER_NAV = [
   {
     group: "Discover",
     items: [
-      { icon: Search,         label: "Browse Items",   href: "/user-browse",        badge: null },
+      { icon: Search,         label: "Browse Items",   href: "/user-browse-items",        badge: null },
     ],
   },
   {

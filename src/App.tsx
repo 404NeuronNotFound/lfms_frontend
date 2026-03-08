@@ -16,6 +16,7 @@ import UserLayout from "./layouts/UserLayout"
 import UserReportLost from "./pages/user/ReportLost"
 import UserMyReports from "./pages/user/MyReports"
 import UserReportFound from "./pages/user/ReportFound"
+import UserBrowseItems from "./pages/user/BrowseItems"
 
 
 import Settings from "./pages/Settings"
@@ -49,6 +50,7 @@ export default function App() {
             <Route path="/user-report-lost" element={<UserReportLost />} />
             <Route path="/user-my-reports" element={<UserMyReports />} />
             <Route path="/user-report-found" element={<UserReportFound />} />
+            <Route path="/user-browse-items" element={<UserBrowseItems />} /> 
           </Route>
         </Route>        
       </Routes>
