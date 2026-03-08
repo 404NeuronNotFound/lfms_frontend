@@ -5,13 +5,14 @@ import {
   MapPin, Tag, Calendar, AlertTriangle, Package, X,
   RefreshCw, Zap, Hash, Layers, FileText, Flag, TrendingUp,
   Sparkles, Phone, Mail, Image, DollarSign, ShieldCheck,
-  User, MessageSquare, Trash2, Check, Ban, SlidersHorizontal,
+  User, MessageSquare, Trash2, Check, Ban, Filter,
 } from "lucide-react"
 import { useAdminReportStore } from "@/store/adminReportStore"
 import type {
   AdminLostReportListItem,
   ReportStatus,
   ReportCategory,
+  ReportType,
 } from "@/types/reportTypes"
 import type { AdminReportFilters } from "@/api/adminReportApi"
 
@@ -655,6 +656,15 @@ function ReportRow({ report, onClick, index }: { report: AdminLostReportListItem
           <span style={{ fontSize: 13, fontWeight: 700, color: "#e2e8f0", fontFamily: "'Syne',sans-serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             {report.item_name}
           </span>
+          <span style={{
+            display: "inline-flex", alignItems: "center", flexShrink: 0,
+            padding: "1px 6px", borderRadius: 6, fontSize: 9, fontWeight: 700, letterSpacing: 0.4,
+            background: report.report_type === "found" ? "rgba(16,185,129,0.1)" : "rgba(99,102,241,0.1)",
+            border: report.report_type === "found" ? "1px solid rgba(16,185,129,0.22)" : "1px solid rgba(99,102,241,0.22)",
+            color: report.report_type === "found" ? "#34d399" : "#818cf8",
+          }}>
+            {report.report_type === "found" ? "FOUND" : "LOST"}
+          </span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontSize: 11, color: "#374151", display: "flex", alignItems: "center", gap: 3 }}>
@@ -695,8 +705,19 @@ function ReportCard({ report, onClick, index }: { report: AdminLostReportListIte
             <CatIcon size={14} color="#4b5563" />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#e2e8f0", fontFamily: "'Syne',sans-serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: 3 }}>
-              {report.item_name}
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3, flexWrap: "wrap" }}>
+              <span style={{ fontSize: 14, fontWeight: 700, color: "#e2e8f0", fontFamily: "'Syne',sans-serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {report.item_name}
+              </span>
+              <span style={{
+                display: "inline-flex", alignItems: "center", flexShrink: 0,
+                padding: "1px 6px", borderRadius: 6, fontSize: 9, fontWeight: 700, letterSpacing: 0.4,
+                background: report.report_type === "found" ? "rgba(16,185,129,0.1)" : "rgba(99,102,241,0.1)",
+                border: report.report_type === "found" ? "1px solid rgba(16,185,129,0.22)" : "1px solid rgba(99,102,241,0.22)",
+                color: report.report_type === "found" ? "#34d399" : "#818cf8",
+              }}>
+                {report.report_type === "found" ? "FOUND" : "LOST"}
+              </span>
             </div>
             <div style={{ fontSize: 11, color: "#4b5563" }}>@{report.user_info.username} · {timeAgo(report.date_reported)}</div>
           </div>
@@ -733,6 +754,7 @@ export default function AllReports() {
   } = useAdminReportStore()
 
   const [statusFilter,   setStatusFilter]   = useState<"all" | ReportStatus>("all")
+  const [typeFilter,     setTypeFilter]     = useState<"all" | ReportType>("all")
   const [categoryFilter, setCategoryFilter] = useState<"all" | ReportCategory>("all")
   const [urgentFilter,   setUrgentFilter]   = useState(false)
   const [searchRaw,      setSearchRaw]      = useState("")
@@ -741,16 +763,19 @@ export default function AllReports() {
   const [deleteTarget,   setDeleteTarget]   = useState<{ id: number; name: string } | null>(null)
   const [showFilters,    setShowFilters]    = useState(false)
 
+  const activeFilterCount = (statusFilter !== "all" ? 1 : 0) + (typeFilter !== "all" ? 1 : 0) + (categoryFilter !== "all" ? 1 : 0) + (urgentFilter ? 1 : 0)
+
   const search = useDebounce(searchRaw, 400)
 
   useEffect(() => {
     const filters: AdminReportFilters = { ordering }
     if (statusFilter   !== "all") filters.status   = statusFilter
+    if (typeFilter     !== "all") filters.type     = typeFilter
     if (categoryFilter !== "all") filters.category = categoryFilter
     if (urgentFilter)             filters.urgent   = true
     if (search.trim())            filters.search   = search.trim()
     fetchReports(filters)
-  }, [statusFilter, categoryFilter, urgentFilter, search, ordering])
+  }, [statusFilter, typeFilter, categoryFilter, urgentFilter, search, ordering])
 
   useEffect(() => { fetchStats() }, [])
 
@@ -791,10 +816,21 @@ export default function AllReports() {
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <motion.button whileTap={{ scale: 0.95 }}
-            onClick={() => setShowFilters(p => !p)}
-            style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 12px", borderRadius: 10, background: showFilters ? "rgba(99,102,241,0.15)" : "rgba(255,255,255,0.04)", border: `1px solid ${showFilters ? "rgba(99,102,241,0.35)" : "rgba(255,255,255,0.09)"}`, fontSize: 12, fontWeight: 600, color: showFilters ? "#a5b4fc" : "#4b5563", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
-            <SlidersHorizontal size={13} />{!isMobile && "Filters"}
+          <motion.button whileTap={{ scale: 0.96 }} onClick={() => setShowFilters(p => !p)}
+            style={{
+              display: "flex", alignItems: "center", gap: 5, padding: "8px 12px", borderRadius: 9, flexShrink: 0,
+              border:     showFilters ? "1px solid rgba(99,102,241,0.4)" : "1px solid rgba(255,255,255,0.1)",
+              background: showFilters ? "rgba(99,102,241,0.12)"          : "rgba(255,255,255,0.04)",
+              fontSize: 12, fontWeight: 500, color: showFilters ? "#a5b4fc" : "rgba(255,255,255,0.55)",
+              cursor: "pointer", fontFamily: "'DM Sans',sans-serif", transition: "all 0.2s",
+            }}>
+            <Filter size={12} />
+            {!isMobile && "Filters"}
+            {activeFilterCount > 0 && (
+              <span style={{ width: 14, height: 14, borderRadius: "50%", background: "#6366f1", fontSize: 8, fontWeight: 700, color: "white", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                {activeFilterCount}
+              </span>
+            )}
           </motion.button>
           <motion.button whileTap={{ scale: 0.95 }}
             onClick={() => { fetchReports({ ordering }); fetchStats() }}
@@ -888,8 +924,31 @@ export default function AllReports() {
                 style={{ display: "flex", alignItems: "center", gap: 7, padding: "8px 14px", borderRadius: 9, border: `1px solid ${urgentFilter ? "rgba(239,68,68,0.4)" : "rgba(255,255,255,0.1)"}`, background: urgentFilter ? "rgba(239,68,68,0.1)" : "rgba(255,255,255,0.03)", fontSize: 12, fontWeight: 600, color: urgentFilter ? "#f87171" : "rgba(255,255,255,0.45)", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
                 <Zap size={12} color={urgentFilter ? "#f87171" : "#4b5563"} />Urgent Only
               </motion.button>
+              {/* Type filter */}
+              <div>
+                <div style={{ fontSize: 10, fontWeight: 700, color: "#4b5563", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 6 }}>Type</div>
+                <div style={{ display: "flex", gap: 5 }}>
+                  {([["all","All"],["lost","Lost"],["found","Found"]] as [string,string][]).map(([val, label]) => (
+                    <button key={val} onClick={() => setTypeFilter(val as any)}
+                      style={{
+                        padding: "4px 11px", borderRadius: 7, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", fontSize: 11, fontWeight: 500,
+                        border: typeFilter === val
+                          ? val === "found" ? "1px solid rgba(16,185,129,0.4)" : val === "lost" ? "1px solid rgba(99,102,241,0.4)" : "1px solid rgba(99,102,241,0.4)"
+                          : "1px solid rgba(255,255,255,0.1)",
+                        background: typeFilter === val
+                          ? val === "found" ? "rgba(16,185,129,0.12)" : "rgba(99,102,241,0.15)"
+                          : "rgba(255,255,255,0.04)",
+                        color: typeFilter === val
+                          ? val === "found" ? "#34d399" : "#a5b4fc"
+                          : "rgba(255,255,255,0.5)",
+                      }}>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <motion.button whileTap={{ scale: 0.97 }}
-                onClick={() => { setCategoryFilter("all"); setUrgentFilter(false); setOrdering("-date_reported") }}
+                onClick={() => { setTypeFilter("all"); setCategoryFilter("all"); setUrgentFilter(false); setOrdering("-date_reported") }}
                 style={{ padding: "8px 14px", borderRadius: 9, border: "1px solid rgba(255,255,255,0.09)", background: "rgba(255,255,255,0.03)", fontSize: 12, fontWeight: 500, color: "#374151", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
                 Reset
               </motion.button>

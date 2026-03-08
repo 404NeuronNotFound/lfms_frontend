@@ -32,6 +32,7 @@ async function handleResponse<T>(res: Response): Promise<T> {
 
 export interface AdminReportFilters {
   status?:   ReportStatus
+  type?:     "lost" | "found"
   category?: ReportCategory
   urgent?:   boolean
   search?:   string
@@ -47,6 +48,7 @@ export async function adminGetReports(
 ): Promise<AdminReportListResponse> {
   const params = new URLSearchParams()
   if (filters.status)   params.set("status",   filters.status)
+  if (filters.type)     params.set("type",     filters.type)
   if (filters.category) params.set("category", filters.category)
   if (filters.urgent)   params.set("urgent",   "true")
   if (filters.search)   params.set("search",   filters.search)
