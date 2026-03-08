@@ -76,10 +76,12 @@ function fmtTime(t: string) {
 // ─────────────────────────────────────────────────────────────────────────────
 //  CLAIM STATUS BADGE
 // ─────────────────────────────────────────────────────────────────────────────
-function ClaimBadge({ status }: { status: "pending" | "approved" }) {
-  const cfg = status === "approved"
-    ? { color: "#34d399", bg: "rgba(52,211,153,0.1)",  border: "rgba(52,211,153,0.25)", label: "Claim Approved", icon: CheckCircle }
-    : { color: "#fbbf24", bg: "rgba(251,191,36,0.1)",  border: "rgba(251,191,36,0.25)", label: "Claim Pending",  icon: Clock }
+function ClaimBadge({ status }: { status: "pending" | "approved" | "rejected" }) {
+  const cfg = {
+    approved: { color: "#34d399", bg: "rgba(52,211,153,0.1)",  border: "rgba(52,211,153,0.25)",  label: "Claim Approved",     icon: CheckCircle },
+    pending:  { color: "#fbbf24", bg: "rgba(251,191,36,0.1)",  border: "rgba(251,191,36,0.25)",  label: "Under Review",       icon: Clock       },
+    rejected: { color: "#f87171", bg: "rgba(239,68,68,0.1)",   border: "rgba(239,68,68,0.25)",   label: "Claim Rejected",     icon: AlertTriangle },
+  }[status]
   const Icon = cfg.icon
   return (
     <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 20, background: cfg.bg, border: `1px solid ${cfg.border}`, fontSize: 11, fontWeight: 700, color: cfg.color }}>
@@ -140,8 +142,8 @@ function ItemCard({ item, onClick, index }: { item: FoundItemListItem; onClick: 
           </div>
         )}
 
-        {/* Claimed overlay */}
-        {item.my_claim_status && (
+        {/* Claim status overlay */}
+        {(item.my_claim_status === "pending" || item.my_claim_status === "approved") && (
           <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(2px)", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <ClaimBadge status={item.my_claim_status} />
           </div>
@@ -297,7 +299,7 @@ function DetailDrawer({ isMobile }: { isMobile: boolean }) {
                             <Zap size={9} />URGENT
                           </span>
                         )}
-                        {item.my_claim_status && <ClaimBadge status={item.my_claim_status} />}
+                        {item.my_claim_status && item.my_claim_status !== null && <ClaimBadge status={item.my_claim_status as "pending" | "approved" | "rejected"} />}
                       </div>
                       <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", fontFamily: "'Syne',sans-serif", letterSpacing: "-0.3px", marginBottom: 4 }}>{item.item_name}</div>
                       <div style={{ fontSize: 11, color: "#4b5563" }}>
@@ -390,34 +392,62 @@ function DetailDrawer({ isMobile }: { isMobile: boolean }) {
                 <div style={{ display: "flex", gap: 10, padding: "12px 14px", borderRadius: 12, background: "rgba(16,185,129,0.06)", border: "1px solid rgba(16,185,129,0.18)" }}>
                   <Info size={13} color="#34d399" style={{ flexShrink: 0, marginTop: 1 }} />
                   <p style={{ fontSize: 12, color: "#6ee7b7", lineHeight: 1.65, margin: 0 }}>
-                    If this item belongs to you, click <strong>Claim This Item</strong> below and describe how you can prove ownership. An admin will verify your claim.
+                    If this item belongs to you, click <strong>Claim This Item</strong> below and describe how you can prove ownership. The report will move to <strong>Under Review</strong> and an admin will verify your claim.
                   </p>
                 </div>
 
                 {/* Claim / status area */}
-                {item.my_claim_status ? (
-                  <ClaimBadge status={item.my_claim_status} />
-                ) : item.status === "matched" ? (
-                  <ClaimButton
-                    reportId={item.id}
-                    reportName={item.item_name}
-                    onSuccess={() => markClaimed(item.id)}
-                  />
-                ) : item.status === "under_review" ? (
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 14px", borderRadius: 12, background: "rgba(251,191,36,0.07)", border: "1px solid rgba(251,191,36,0.2)" }}>
-                    <Clock size={13} color="#fbbf24" style={{ flexShrink: 0 }} />
-                    <p style={{ fontSize: 12, color: "#fde68a", margin: 0, lineHeight: 1.5 }}>
-                      This item is <strong>under admin review</strong>. Claiming will be enabled once a match is confirmed.
-                    </p>
-                  </div>
-                ) : (
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 14px", borderRadius: 12, background: "rgba(99,102,241,0.07)", border: "1px solid rgba(99,102,241,0.2)" }}>
-                    <Clock size={13} color="#818cf8" style={{ flexShrink: 0 }} />
-                    <p style={{ fontSize: 12, color: "#a5b4fc", margin: 0, lineHeight: 1.5 }}>
-                      This item is <strong>open</strong>. Once an admin verifies a match, you'll be able to submit a claim.
-                    </p>
-                  </div>
-                )}
+                {/* Claim / status area */}
+                {(() => {
+                  const claimStatus = item.my_claim_status
+
+                  if (claimStatus === "pending" || claimStatus === "approved") {
+                    return <ClaimBadge status={claimStatus} />
+                  }
+
+                  const canClaim = item.status === "open" || item.status === "under_review" || item.status === "matched"
+
+                  if (claimStatus === "rejected") {
+                    return (
+                      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                        <ClaimBadge status="rejected" />
+                        <div style={{ display: "flex", gap: 8, padding: "10px 14px", borderRadius: 12, background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.18)" }}>
+                          <AlertTriangle size={13} color="#f87171" style={{ flexShrink: 0, marginTop: 1 }} />
+                          <p style={{ fontSize: 12, color: "#fca5a5", margin: 0, lineHeight: 1.5 }}>
+                            Your previous claim was rejected. You may submit a new claim with stronger proof of ownership.
+                          </p>
+                        </div>
+                        {canClaim && (
+                          <ClaimButton
+                            reportId={item.id}
+                            reportName={item.item_name}
+                            onSuccess={() => markClaimed(item.id)}
+                          />
+                        )}
+                      </div>
+                    )
+                  }
+
+                  // No claim yet
+                  if (canClaim) {
+                    return (
+                      <ClaimButton
+                        reportId={item.id}
+                        reportName={item.item_name}
+                        onSuccess={() => markClaimed(item.id)}
+                      />
+                    )
+                  }
+
+                  return (
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 14px", borderRadius: 12, background: "rgba(107,114,128,0.07)", border: "1px solid rgba(107,114,128,0.2)" }}>
+                      <Clock size={13} color="#6b7280" style={{ flexShrink: 0 }} />
+                      <p style={{ fontSize: 12, color: "#9ca3af", margin: 0, lineHeight: 1.5 }}>
+                        This item is no longer available for claiming.
+                      </p>
+                    </div>
+                  )
+                })()}
 
               </div>
             )}
@@ -450,7 +480,10 @@ export default function BrowseItems() {
   // Sync debounced input → store
   useEffect(() => { setSearch(debouncedSearch) }, [debouncedSearch, setSearch])
 
-  // Fetch on filter changes
+  // Always fetch on mount (restores claim status badges after refresh)
+  useEffect(() => { fetchItems() }, [])  // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Re-fetch when filters change
   useEffect(() => { fetchItems() }, [search, category, ordering, fetchItems])
 
   const activeFilters = (category !== "all" ? 1 : 0) + (ordering !== "-date_reported" ? 1 : 0)

@@ -13,8 +13,8 @@ async function handleResponse<T>(res: Response): Promise<T> {
 
 /**
  * GET /api/found-items/
- * Tries authenticated fetch first so my_claim_status is populated,
- * falls back to anonymous for unauthenticated users.
+ * Public endpoint — always uses plain fetch with optional Authorization header.
+ * Never throws SESSION_EXPIRED since the endpoint is AllowAny.
  */
 export async function getFoundItems(filters: BrowseFilters = {}): Promise<BrowseResponse> {
   const params = new URLSearchParams()
@@ -24,26 +24,25 @@ export async function getFoundItems(filters: BrowseFilters = {}): Promise<Browse
 
   const url = `${BASE}/found-items/${params.toString() ? "?" + params : ""}`
 
-  try {
-    const res = await authFetch(url)
-    return handleResponse<BrowseResponse>(res)
-  } catch {
-    const res = await fetch(url)
-    return handleResponse<BrowseResponse>(res)
-  }
+  const headers: Record<string, string> = {}
+  const token = localStorage.getItem("access")
+  if (token) headers["Authorization"] = `Bearer ${token}`
+
+  const res = await fetch(url, { headers })
+  return handleResponse<BrowseResponse>(res)
 }
 
 /**
  * GET /api/found-items/<id>/
- * Increments view count server-side.
+ * Public endpoint — same approach as above.
  */
 export async function getFoundItem(id: number): Promise<FoundItemDetail> {
   const url = `${BASE}/found-items/${id}/`
-  try {
-    const res = await authFetch(url)
-    return handleResponse<FoundItemDetail>(res)
-  } catch {
-    const res = await fetch(url)
-    return handleResponse<FoundItemDetail>(res)
-  }
+
+  const headers: Record<string, string> = {}
+  const token = localStorage.getItem("access")
+  if (token) headers["Authorization"] = `Bearer ${token}`
+
+  const res = await fetch(url, { headers })
+  return handleResponse<FoundItemDetail>(res)
 }

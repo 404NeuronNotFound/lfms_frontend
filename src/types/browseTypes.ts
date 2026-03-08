@@ -4,7 +4,8 @@ import type { ReportCategory, ReportStatus } from "@/types/reportTypes"
 //  SHARED
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type MyClaimStatus = "pending" | "approved" | null
+export type ClaimStatusValue = "pending" | "approved" | "rejected"
+export type MyClaimStatus = ClaimStatusValue | null
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  BROWSE FILTERS

@@ -39,7 +39,12 @@ export default function ClaimButton({ reportId, reportName, onSuccess }: Props) 
       setPhase("success")
       onSuccess?.(claim)
     } catch (e: any) {
-      setError(e.message ?? "Something went wrong. Please try again.")
+      const msg = e.message ?? ""
+      setError(
+        msg === "SESSION_EXPIRED"
+          ? "Your session has expired. Please log in again and retry."
+          : msg || "Something went wrong. Please try again."
+      )
       setPhase("error")
     }
   }

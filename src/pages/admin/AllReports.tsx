@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+import MatchManager from "@/components/MatchManager"
+import { adminUnmatch } from "@/api/adminReportApi"
 import {
   ClipboardList, Search, Eye, CheckCircle, XCircle, Clock,
   MapPin, Tag, Calendar, AlertTriangle, Package, X,
   RefreshCw, Zap, Hash, Layers, FileText, Flag, TrendingUp,
   Sparkles, Phone, Mail, Image, DollarSign, ShieldCheck,
   User, MessageSquare, Trash2, Check, Ban, Filter, Download,
+  Link2, Unlink,
 } from "lucide-react"
 import { useAdminReportStore } from "@/store/adminReportStore"
 import type {
@@ -214,12 +217,14 @@ function InfoRow({ icon: Icon, label, children }: { icon: React.ElementType; lab
 //  REVIEW DRAWER
 // ─────────────────────────────────────────────────────────────────────────────
 function ReviewDrawer({
-  reportId, onClose, isMobile, onDeleteRequest,
+  reportId, onClose, isMobile, onDeleteRequest, onUnmatched, onOpenMatcher,
 }: {
   reportId: number | null
   onClose: () => void
   isMobile: boolean
   onDeleteRequest: (id: number, name: string) => void
+  onUnmatched: () => void
+  onOpenMatcher: () => void
 }) {
   const {
     activeReport, loadingDetail, detailError,
@@ -529,6 +534,48 @@ function ReviewDrawer({
                   </div>
 
                   <div style={{ padding: "18px 18px 20px", display: "flex", flexDirection: "column", gap: 16 }}>
+                    {/* Match actions */}
+                    <div>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: "#4b5563", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 10 }}>Matching</div>
+                      {r.status === "matched" ? (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                          {/* Matched partner info */}
+                          {r.matched_report && (
+                            <div style={{ padding: "10px 14px", borderRadius: 10, background: "rgba(99,102,241,0.07)", border: "1px solid rgba(99,102,241,0.2)", fontSize: 12, color: "#a5b4fc" }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                                <Link2 size={11} color="#818cf8" />
+                                <span style={{ fontWeight: 700, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.8 }}>Matched With</span>
+                              </div>
+                              <div style={{ color: "#c4c9e2", fontWeight: 600 }}>Report #{typeof r.matched_report === "number" ? r.matched_report : (r.matched_report as any)?.id}</div>
+                            </div>
+                          )}
+                          <motion.button whileHover={{ x: 2 }} whileTap={{ scale: 0.98 }}
+                            onClick={async () => {
+                              try {
+                                await adminUnmatch(r.id)
+                                onUnmatched()
+                                onClose()
+                              } catch (e: any) {
+                                alert(e.message ?? "Failed to unmatch.")
+                              }
+                            }}
+                            style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(239,68,68,0.3)", background: "rgba(239,68,68,0.07)", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
+                            <Unlink size={14} color="#f87171" />
+                            <span style={{ fontSize: 13, fontWeight: 600, color: "#f87171", flex: 1, textAlign: "left" }}>Unmatch Reports</span>
+                          </motion.button>
+                        </div>
+                      ) : (
+                        <motion.button whileHover={{ x: 2 }} whileTap={{ scale: 0.98 }}
+                          onClick={() => onOpenMatcher()}
+                          style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(99,102,241,0.3)", background: "rgba(99,102,241,0.07)", cursor: "pointer", fontFamily: "'DM Sans',sans-serif", width: "100%" }}>
+                          <Link2 size={14} color="#818cf8" />
+                          <span style={{ fontSize: 13, fontWeight: 600, color: "#a5b4fc", flex: 1, textAlign: "left" }}>
+                            Match with {r.report_type === "lost" ? "a Found" : "a Lost"} Report
+                          </span>
+                        </motion.button>
+                      )}
+                    </div>
+
                     {/* Status actions */}
                     {actions.length > 0 ? (
                       <div>
@@ -774,6 +821,7 @@ export default function AllReports() {
   const [openId,         setOpenId]         = useState<number | null>(null)
   const [deleteTarget,   setDeleteTarget]   = useState<{ id: number; name: string } | null>(null)
   const [showFilters,    setShowFilters]    = useState(false)
+  const [showMatcher,   setShowMatcher]   = useState(false)
 
   const activeFilterCount = (statusFilter !== "all" ? 1 : 0) + (typeFilter !== "all" ? 1 : 0) + (categoryFilter !== "all" ? 1 : 0) + (urgentFilter ? 1 : 0)
 
@@ -834,6 +882,11 @@ export default function AllReports() {
               <Download size={13} />Export
             </motion.button>
           )}
+          <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}
+            onClick={() => setShowMatcher(true)}
+            style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 16px", borderRadius: 10, border: "1px solid rgba(99,102,241,0.35)", background: "rgba(99,102,241,0.1)", fontSize: 13, fontWeight: 600, color: "#a5b4fc", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
+            <Link2 size={13} />{!isMobile && "Match Reports"}
+          </motion.button>
           <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}
             onClick={() => { fetchReports({ ordering }); fetchStats() }}
             disabled={loadingList}
@@ -1051,12 +1104,24 @@ export default function AllReports() {
         </div>
       )}
 
+      {/* Match Manager modal */}
+      <AnimatePresence>
+        {showMatcher && (
+          <MatchManager
+            onClose={() => setShowMatcher(false)}
+            onMatched={() => { fetchReports({ ordering }); fetchStats() }}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Review drawer */}
       <ReviewDrawer
         reportId={openId}
         onClose={() => setOpenId(null)}
         isMobile={isMobile}
         onDeleteRequest={(id, name) => setDeleteTarget({ id, name })}
+        onUnmatched={() => { fetchReports({ ordering }); fetchStats() }}
+        onOpenMatcher={() => setShowMatcher(true)}
       />
 
       {/* Delete modal */}

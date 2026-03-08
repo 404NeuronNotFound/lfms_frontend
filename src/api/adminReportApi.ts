@@ -7,6 +7,7 @@ import type {
   AdminUpdateReportResponse,
   ReportStatus,
   ReportCategory,
+  AdminLostReportListItem,
 } from "@/types/reportTypes"
 
 const BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000/api"
@@ -97,4 +98,51 @@ export async function adminUpdateReport(
 export async function adminDeleteReport(id: number): Promise<{ message: string }> {
   const res = await authFetch(`${BASE}/admin/reports/${id}/`, { method: "DELETE" })
   return handleResponse<{ message: string }>(res)
+}
+
+// ── Manual Matching ───────────────────────────────────────────────────────────
+
+/**
+ * POST /api/admin/match/manual/
+ * Manually link a lost report + found report as a confirmed match.
+ */
+export async function adminManualMatch(
+  lostReportId:  number,
+  foundReportId: number,
+): Promise<{ message: string; lost_report_id: number; found_report_id: number; suggestion_id: number }> {
+  const res = await authFetch(`${BASE}/admin/match/manual/`, {
+    method:  "POST",
+    headers: { "Content-Type": "application/json" },
+    body:    JSON.stringify({ lost_report_id: lostReportId, found_report_id: foundReportId }),
+  })
+  return handleResponse(res)
+}
+
+/**
+ * POST /api/admin/match/unmatch/
+ * Undo a match — resets both reports back to open.
+ */
+export async function adminUnmatch(
+  reportId: number,
+): Promise<{ message: string }> {
+  const res = await authFetch(`${BASE}/admin/match/unmatch/`, {
+    method:  "POST",
+    headers: { "Content-Type": "application/json" },
+    body:    JSON.stringify({ report_id: reportId }),
+  })
+  return handleResponse(res)
+}
+
+/**
+ * GET /api/admin/reports/?type=lost&status=open  (reuse existing)
+ * Used by match picker to list available lost/found reports.
+ */
+export async function adminGetReportsByType(
+  type:    "lost" | "found",
+  status?: string,
+): Promise<{ count: number; results: AdminLostReportListItem[] }> {
+  const params = new URLSearchParams({ type })
+  if (status) params.set("status", status)
+  const res = await authFetch(`${BASE}/admin/reports/?${params}`)
+  return handleResponse(res)
 }
