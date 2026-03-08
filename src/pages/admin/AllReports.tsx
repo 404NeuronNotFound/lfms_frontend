@@ -5,7 +5,7 @@ import {
   MapPin, Tag, Calendar, AlertTriangle, Package, X,
   RefreshCw, Zap, Hash, Layers, FileText, Flag, TrendingUp,
   Sparkles, Phone, Mail, Image, DollarSign, ShieldCheck,
-  User, MessageSquare, Trash2, Check, Ban, Filter,
+  User, MessageSquare, Trash2, Check, Ban, Filter, Download,
 } from "lucide-react"
 import { useAdminReportStore } from "@/store/adminReportStore"
 import type {
@@ -369,6 +369,15 @@ function ReviewDrawer({
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap", marginBottom: 6 }}>
                         <StatusPill status={r.status} />
+                        <span style={{
+                          display: "inline-flex", alignItems: "center",
+                          padding: "3px 8px", borderRadius: 20, fontSize: 10, fontWeight: 700, letterSpacing: 0.4,
+                          background: r.report_type === "found" ? "rgba(16,185,129,0.1)"  : "rgba(99,102,241,0.1)",
+                          border:     r.report_type === "found" ? "1px solid rgba(16,185,129,0.28)" : "1px solid rgba(99,102,241,0.28)",
+                          color:      r.report_type === "found" ? "#34d399" : "#818cf8",
+                        }}>
+                          {r.report_type === "found" ? "FOUND" : "LOST"}
+                        </span>
                         {r.is_urgent && (
                           <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 8px", borderRadius: 20, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.28)", fontSize: 10, fontWeight: 700, color: "#f87171" }}>
                             <Zap size={9} />URGENT
@@ -465,13 +474,16 @@ function ReviewDrawer({
 
                 {/* Where & When */}
                 <div>
-                  <SectionLabel>Where & When</SectionLabel>
+                  <SectionLabel>{r.report_type === "found" ? "Where & When Found" : "Where & When Lost"}</SectionLabel>
                   <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                     <InfoRow icon={MapPin} label="Location">
                       {r.location}{r.location_detail ? ` — ${r.location_detail}` : ""}
                     </InfoRow>
-                    <InfoRow icon={Calendar} label="Date Lost">{fmtDate(r.date_event)}</InfoRow>
-                    {r.time_event && <InfoRow icon={Clock} label="Time Lost">{fmtTime(r.time_event)}</InfoRow>}
+                    <InfoRow icon={Calendar} label={r.report_type === "found" ? "Date Found" : "Date Lost"}>{fmtDate(r.date_event)}</InfoRow>
+                    {r.time_event && <InfoRow icon={Clock} label={r.report_type === "found" ? "Time Found" : "Time Lost"}>{fmtTime(r.time_event)}</InfoRow>}
+                    {r.report_type === "found" && (r as any).found_stored_at && (
+                      <InfoRow icon={MapPin} label="Item Currently At">{(r as any).found_stored_at}</InfoRow>
+                    )}
                   </div>
                 </div>
 
@@ -802,7 +814,7 @@ export default function AllReports() {
       `}</style>
 
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: isMobile ? 20 : 28 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: isMobile ? 20 : 28, flexWrap: "wrap", gap: 12 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <div style={{ width: 42, height: 42, borderRadius: 12, background: "linear-gradient(135deg,#6366f1,#8b5cf6)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 18px rgba(99,102,241,0.35)", flexShrink: 0 }}>
             <ClipboardList size={18} color="white" />
@@ -815,29 +827,21 @@ export default function AllReports() {
             </p>
           </div>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <motion.button whileTap={{ scale: 0.96 }} onClick={() => setShowFilters(p => !p)}
-            style={{
-              display: "flex", alignItems: "center", gap: 5, padding: "8px 12px", borderRadius: 9, flexShrink: 0,
-              border:     showFilters ? "1px solid rgba(99,102,241,0.4)" : "1px solid rgba(255,255,255,0.1)",
-              background: showFilters ? "rgba(99,102,241,0.12)"          : "rgba(255,255,255,0.04)",
-              fontSize: 12, fontWeight: 500, color: showFilters ? "#a5b4fc" : "rgba(255,255,255,0.55)",
-              cursor: "pointer", fontFamily: "'DM Sans',sans-serif", transition: "all 0.2s",
-            }}>
-            <Filter size={12} />
-            {!isMobile && "Filters"}
-            {activeFilterCount > 0 && (
-              <span style={{ width: 14, height: 14, borderRadius: "50%", background: "#6366f1", fontSize: 8, fontWeight: 700, color: "white", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                {activeFilterCount}
-              </span>
-            )}
-          </motion.button>
-          <motion.button whileTap={{ scale: 0.95 }}
+        <div style={{ display: "flex", gap: 8 }}>
+          {!isMobile && (
+            <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}
+              style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 16px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.55)", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
+              <Download size={13} />Export
+            </motion.button>
+          )}
+          <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}
             onClick={() => { fetchReports({ ordering }); fetchStats() }}
-            style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.09)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+            disabled={loadingList}
+            style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 16px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#6366f1,#8b5cf6)", fontSize: 13, fontWeight: 600, color: "#fff", cursor: loadingList ? "not-allowed" : "pointer", fontFamily: "'DM Sans',sans-serif", boxShadow: "0 4px 16px rgba(99,102,241,0.3)", opacity: loadingList ? 0.7 : 1 }}>
             <motion.div animate={loadingList ? { rotate: 360 } : {}} transition={{ duration: 1, repeat: loadingList ? Infinity : 0, ease: "linear" }}>
-              <RefreshCw size={14} color="#4b5563" />
+              <RefreshCw size={13} />
             </motion.div>
+            {!isMobile && "Refresh"}
           </motion.button>
         </div>
       </div>
@@ -866,96 +870,131 @@ export default function AllReports() {
         </motion.div>
       )}
 
-      {/* Search */}
-      <div style={{ position: "relative", marginBottom: 14 }}>
-        <Search size={14} color="#374151" style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
-        <input
-          value={searchRaw}
-          onChange={e => setSearchRaw(e.target.value)}
-          placeholder="Search by item, location, or username…"
-          style={{ width: "100%", boxSizing: "border-box", padding: "10px 14px 10px 38px", borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.09)", fontSize: 13, color: "#e2e8f0", fontFamily: "'DM Sans',sans-serif", outline: "none", transition: "border-color 0.15s, box-shadow 0.15s" }}
-        />
-        {searchRaw && (
-          <button onClick={() => setSearchRaw("")}
-            style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
-            <X size={13} color="#374151" />
-          </button>
-        )}
-      </div>
+      {/* Toolbar — search + filter (AllUsers-style) */}
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+        style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, padding: "12px 14px", marginBottom: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "nowrap" }}>
+          {/* Search */}
+          <div style={{ position: "relative", flex: 1, minWidth: 0 }}>
+            <Search size={13} color="#6b7280" style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
+            <input
+              value={searchRaw}
+              onChange={e => setSearchRaw(e.target.value)}
+              placeholder={isMobile ? "Search…" : "Search by item, location, or username…"}
+              style={{ width: "100%", background: "#10101e", border: "1px solid rgba(255,255,255,0.09)", borderRadius: 9, padding: "8px 32px 8px 32px", fontSize: 13, color: "#ffffff", outline: "none", fontFamily: "'DM Sans',sans-serif", boxSizing: "border-box", transition: "border-color 0.2s, box-shadow 0.2s" }}
+              onFocus={e => { e.currentTarget.style.borderColor = "rgba(99,102,241,0.5)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(99,102,241,0.1)" }}
+              onBlur={e  => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.09)"; e.currentTarget.style.boxShadow = "none" }}
+            />
+            {searchRaw && (
+              <button onClick={() => setSearchRaw("")}
+                style={{ position: "absolute", right: 9, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", display: "flex", padding: 0 }}>
+                <X size={12} color="#6b7280" />
+              </button>
+            )}
+          </div>
 
-      {/* Status pills */}
-      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 12 }}>
-        {STATUS_FILTERS.map(f => (
-          <motion.button key={f.value} whileTap={{ scale: 0.96 }}
-            onClick={() => setStatusFilter(f.value)}
-            className={statusFilter === f.value ? "ar-pill-active" : ""}
-            style={{ padding: "5px 12px", borderRadius: 20, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.03)", fontSize: 12, fontWeight: 500, color: "rgba(255,255,255,0.45)", cursor: "pointer", fontFamily: "'DM Sans',sans-serif", transition: "all 0.15s" }}>
-            {f.label}
+          {/* Filters toggle */}
+          <motion.button whileTap={{ scale: 0.96 }} onClick={() => setShowFilters(p => !p)}
+            style={{
+              display: "flex", alignItems: "center", gap: 5, padding: "8px 12px", borderRadius: 9, flexShrink: 0,
+              border:     showFilters ? "1px solid rgba(99,102,241,0.4)" : "1px solid rgba(255,255,255,0.1)",
+              background: showFilters ? "rgba(99,102,241,0.12)"          : "rgba(255,255,255,0.04)",
+              fontSize: 12, fontWeight: 500, color: showFilters ? "#a5b4fc" : "rgba(255,255,255,0.55)",
+              cursor: "pointer", fontFamily: "'DM Sans',sans-serif", transition: "all 0.2s",
+            }}>
+            <Filter size={12} />
+            {!isMobile && "Filters"}
+            {activeFilterCount > 0 && (
+              <span style={{ width: 14, height: 14, borderRadius: "50%", background: "#6366f1", fontSize: 8, fontWeight: 700, color: "white", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                {activeFilterCount}
+              </span>
+            )}
           </motion.button>
-        ))}
-      </div>
 
-      {/* Extended filter panel */}
-      <AnimatePresence>
-        {showFilters && (
-          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
-            style={{ overflow: "hidden", marginBottom: 14 }}>
-            <div style={{ padding: "16px 18px", borderRadius: 14, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)", display: "flex", flexWrap: "wrap", gap: 14, alignItems: "flex-end" }}>
-              <div style={{ flex: "1 1 160px" }}>
-                <div style={{ fontSize: 10, fontWeight: 700, color: "#4b5563", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 6 }}>Category</div>
-                <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value as any)}
-                  style={{ width: "100%", padding: "8px 12px", borderRadius: 9, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "#c4c9e2", fontSize: 12, fontFamily: "'DM Sans',sans-serif", outline: "none", cursor: "pointer" }}>
-                  <option value="all">All Categories</option>
-                  {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
-              </div>
-              <div style={{ flex: "1 1 160px" }}>
-                <div style={{ fontSize: 10, fontWeight: 700, color: "#4b5563", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 6 }}>Sort By</div>
-                <select value={ordering} onChange={e => setOrdering(e.target.value as any)}
-                  style={{ width: "100%", padding: "8px 12px", borderRadius: 9, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "#c4c9e2", fontSize: 12, fontFamily: "'DM Sans',sans-serif", outline: "none", cursor: "pointer" }}>
-                  <option value="-date_reported">Newest First</option>
-                  <option value="date_reported">Oldest First</option>
-                  <option value="-views">Most Viewed</option>
-                  <option value="views">Least Viewed</option>
-                  <option value="item_name">A–Z by Name</option>
-                </select>
-              </div>
-              <motion.button whileTap={{ scale: 0.97 }} onClick={() => setUrgentFilter(p => !p)}
-                style={{ display: "flex", alignItems: "center", gap: 7, padding: "8px 14px", borderRadius: 9, border: `1px solid ${urgentFilter ? "rgba(239,68,68,0.4)" : "rgba(255,255,255,0.1)"}`, background: urgentFilter ? "rgba(239,68,68,0.1)" : "rgba(255,255,255,0.03)", fontSize: 12, fontWeight: 600, color: urgentFilter ? "#f87171" : "rgba(255,255,255,0.45)", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
-                <Zap size={12} color={urgentFilter ? "#f87171" : "#4b5563"} />Urgent Only
-              </motion.button>
-              {/* Type filter */}
-              <div>
-                <div style={{ fontSize: 10, fontWeight: 700, color: "#4b5563", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 6 }}>Type</div>
-                <div style={{ display: "flex", gap: 5 }}>
-                  {([["all","All"],["lost","Lost"],["found","Found"]] as [string,string][]).map(([val, label]) => (
-                    <button key={val} onClick={() => setTypeFilter(val as any)}
-                      style={{
-                        padding: "4px 11px", borderRadius: 7, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", fontSize: 11, fontWeight: 500,
-                        border: typeFilter === val
-                          ? val === "found" ? "1px solid rgba(16,185,129,0.4)" : val === "lost" ? "1px solid rgba(99,102,241,0.4)" : "1px solid rgba(99,102,241,0.4)"
-                          : "1px solid rgba(255,255,255,0.1)",
-                        background: typeFilter === val
-                          ? val === "found" ? "rgba(16,185,129,0.12)" : "rgba(99,102,241,0.15)"
-                          : "rgba(255,255,255,0.04)",
-                        color: typeFilter === val
-                          ? val === "found" ? "#34d399" : "#a5b4fc"
-                          : "rgba(255,255,255,0.5)",
-                      }}>
-                      {label}
-                    </button>
-                  ))}
+          {/* Count */}
+          <div style={{ fontSize: 11, color: "#4b5563", whiteSpace: "nowrap", flexShrink: 0 }}>
+            {loadingList ? "…" : `${reports.length}/${reportCount}`}
+          </div>
+        </div>
+
+        {/* Expandable filters */}
+        <AnimatePresence>
+          {showFilters && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.18 }} style={{ overflow: "hidden" }}>
+              <div style={{ paddingTop: 12, marginTop: 12, borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", gap: 16, flexWrap: "wrap", alignItems: "flex-end" }}>
+
+                {/* Status */}
+                <div>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: "#4b5563", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 7 }}>Status</div>
+                  <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+                    {STATUS_FILTERS.map(f => (
+                      <button key={f.value} onClick={() => setStatusFilter(f.value)}
+                        style={{ padding: "4px 11px", borderRadius: 7, border: statusFilter === f.value ? "1px solid rgba(99,102,241,0.4)" : "1px solid rgba(255,255,255,0.1)", background: statusFilter === f.value ? "rgba(99,102,241,0.15)" : "rgba(255,255,255,0.04)", fontSize: 11, fontWeight: 500, color: statusFilter === f.value ? "#a5b4fc" : "rgba(255,255,255,0.5)", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
+                        {f.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
+
+                {/* Type */}
+                <div>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: "#4b5563", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 7 }}>Type</div>
+                  <div style={{ display: "flex", gap: 5 }}>
+                    {([["all","All"],["lost","Lost"],["found","Found"]] as [string,string][]).map(([val, label]) => (
+                      <button key={val} onClick={() => setTypeFilter(val as any)}
+                        style={{
+                          padding: "4px 11px", borderRadius: 7, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", fontSize: 11, fontWeight: 500,
+                          border: typeFilter === val ? (val === "found" ? "1px solid rgba(16,185,129,0.4)" : "1px solid rgba(99,102,241,0.4)") : "1px solid rgba(255,255,255,0.1)",
+                          background: typeFilter === val ? (val === "found" ? "rgba(16,185,129,0.12)" : "rgba(99,102,241,0.15)") : "rgba(255,255,255,0.04)",
+                          color: typeFilter === val ? (val === "found" ? "#34d399" : "#a5b4fc") : "rgba(255,255,255,0.5)",
+                        }}>
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Category */}
+                <div style={{ flex: "1 1 160px" }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: "#4b5563", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 7 }}>Category</div>
+                  <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value as any)}
+                    style={{ width: "100%", padding: "6px 10px", borderRadius: 7, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "#c4c9e2", fontSize: 11, fontFamily: "'DM Sans',sans-serif", outline: "none", cursor: "pointer" }}>
+                    <option value="all">All Categories</option>
+                    {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+
+                {/* Sort */}
+                <div style={{ flex: "1 1 140px" }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: "#4b5563", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 7 }}>Sort By</div>
+                  <select value={ordering} onChange={e => setOrdering(e.target.value as any)}
+                    style={{ width: "100%", padding: "6px 10px", borderRadius: 7, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "#c4c9e2", fontSize: 11, fontFamily: "'DM Sans',sans-serif", outline: "none", cursor: "pointer" }}>
+                    <option value="-date_reported">Newest First</option>
+                    <option value="date_reported">Oldest First</option>
+                    <option value="-views">Most Viewed</option>
+                    <option value="views">Least Viewed</option>
+                    <option value="item_name">A–Z by Name</option>
+                  </select>
+                </div>
+
+                {/* Urgent toggle */}
+                <motion.button whileTap={{ scale: 0.97 }} onClick={() => setUrgentFilter(p => !p)}
+                  style={{ display: "flex", alignItems: "center", gap: 7, padding: "6px 12px", borderRadius: 7, border: `1px solid ${urgentFilter ? "rgba(239,68,68,0.4)" : "rgba(255,255,255,0.1)"}`, background: urgentFilter ? "rgba(239,68,68,0.1)" : "rgba(255,255,255,0.04)", fontSize: 11, fontWeight: 600, color: urgentFilter ? "#f87171" : "rgba(255,255,255,0.5)", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
+                  <Zap size={11} color={urgentFilter ? "#f87171" : "#4b5563"} />Urgent Only
+                </motion.button>
+
+                {/* Reset */}
+                {activeFilterCount > 0 && (
+                  <button onClick={() => { setStatusFilter("all"); setTypeFilter("all"); setCategoryFilter("all"); setUrgentFilter(false); setOrdering("-date_reported") }}
+                    style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 7, border: "1px solid rgba(239,68,68,0.25)", background: "rgba(239,68,68,0.07)", fontSize: 11, color: "#f87171", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
+                    <X size={10} />Reset
+                  </button>
+                )}
               </div>
-              <motion.button whileTap={{ scale: 0.97 }}
-                onClick={() => { setTypeFilter("all"); setCategoryFilter("all"); setUrgentFilter(false); setOrdering("-date_reported") }}
-                style={{ padding: "8px 14px", borderRadius: 9, border: "1px solid rgba(255,255,255,0.09)", background: "rgba(255,255,255,0.03)", fontSize: 12, fontWeight: 500, color: "#374151", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
-                Reset
-              </motion.button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
 
       {/* Error banner */}
       <AnimatePresence>

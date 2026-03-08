@@ -25,8 +25,8 @@ const ADMIN_NAV = [
     group: "Management",
     items: [
       { icon: ClipboardList,  label: "All Reports",  href: "/admin-all-reports", badge: null },
-      { icon: PackageSearch,  label: "Lost Items",   href: "/admin-lost",        badge: null },
-      { icon: Tag,            label: "Found Items",  href: "/admin-found",       badge: null },
+      // { icon: PackageSearch,  label: "Lost Items",   href: "/admin-lost",        badge: null },
+      // { icon: Tag,            label: "Found Items",  href: "/admin-found",       badge: null },
       // { icon: CheckCircle,    label: "Claimed",      href: "/admin-claimed",     badge: null },
       { icon: ShieldCheck,    label: "Claims",       href: "/admin-claims", badge: null }
     ],
@@ -35,7 +35,7 @@ const ADMIN_NAV = [
     group: "Users",
     items: [
       { icon: Users,          label: "All Users",    href: "/admin-all-users",   badge: null },
-      { icon: ShieldCheck,    label: "Verifications",href: "/admin-verify",      badge: null },
+      // { icon: ShieldCheck,    label: "Verifications",href: "/admin-verify",      badge: null },
       { icon: MessageSquare,  label: "Messages",     href: "/admin-messages",    badge: null },
     ],
   },
