@@ -351,8 +351,8 @@ function DetailDrawer({
                     <InfoRow icon={MapPin} label="Location">
                       {r.location}{r.location_detail ? ` — ${r.location_detail}` : ""}
                     </InfoRow>
-                    <InfoRow icon={Calendar} label="Date Lost">{fmtDate(r.date_lost)}</InfoRow>
-                    {r.time_lost && <InfoRow icon={Clock} label="Time Lost">{fmtTime(r.time_lost)}</InfoRow>}
+                    <InfoRow icon={Calendar} label="Date Lost">{fmtDate(r.date_event)}</InfoRow>
+                    {r.time_event && <InfoRow icon={Clock} label="Time Lost">{fmtTime(r.time_event)}</InfoRow>}
                   </div>
                 </div>
 
