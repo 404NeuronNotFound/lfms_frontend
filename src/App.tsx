@@ -9,6 +9,7 @@ import AdminDashboard from "./pages/admin/Dashboard"
 import AdminLayout from "./layouts/AdminLayout"
 import AdminAllUser from "./pages/admin/AllUser"
 import AdminAllReports from "./pages/admin/AllReports"
+import AdminClaims from "./pages/admin/AdminClaims"
 
 import UserDashboard from "./pages/user/Dashboard"
 import UserLayout from "./layouts/UserLayout"
@@ -37,6 +38,7 @@ export default function App() {
             <Route path="/admin-settings" element={<Settings />} />
             <Route path="/admin-all-users" element={<AdminAllUser />} />
             <Route path="/admin-all-reports" element={<AdminAllReports />} />
+            <Route path="/admin-claims" element={<AdminClaims />} />
           </Route>
         </Route>
 
