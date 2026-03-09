@@ -300,6 +300,7 @@ export interface ClaimantInfo {
   username: string
   name:     string
   email:    string
+  avatar:   string | null
 }
 
 export interface ClaimReportSummary {
