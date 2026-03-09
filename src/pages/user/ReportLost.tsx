@@ -78,6 +78,11 @@ const STEPS = [
 
 const COLORS = ["Black","White","Gray","Red","Orange","Yellow","Green","Blue","Purple","Pink","Brown","Gold","Silver","Multicolor"]
 
+// Indigo accent for lost flow
+const ACCENT   = "#6366f1"
+const ACCENT2  = "#8b5cf6"
+const ACCENT_L = "rgba(99,102,241,"
+
 // ─────────────────────────────────────────────────────────────────────────────
 // HELPERS
 // ─────────────────────────────────────────────────────────────────────────────
@@ -130,16 +135,18 @@ function StepItemInfo({ data, set, errors, isMobile }: { data: FormData; set: (k
               <motion.button key={c.value} type="button" whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}
                 onClick={() => set("category", c.value)}
                 style={{
-                  padding: "10px 8px", borderRadius: 12, cursor: "pointer",
-                  border: selected ? "1px solid rgba(99,102,241,0.5)" : "1px solid rgba(255,255,255,0.07)",
-                  background: selected ? "rgba(99,102,241,0.14)" : "rgba(255,255,255,0.03)",
+                  padding: "11px 10px", borderRadius: 12, cursor: "pointer",
+                  border: `1px solid ${selected ? "rgba(99,102,241,0.5)" : "rgba(255,255,255,0.07)"}`,
+                  background: selected ? "rgba(99,102,241,0.12)" : "rgba(255,255,255,0.02)",
                   display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
-                  transition: "all 0.2s", fontFamily: "'DM Sans',sans-serif",
+                  transition: "all 0.18s", fontFamily: "'DM Sans',sans-serif",
+                  boxShadow: selected ? "0 0 12px rgba(99,102,241,0.18)" : "none",
                 }}>
                 <div style={{ width: 32, height: 32, borderRadius: 9, background: selected ? "rgba(99,102,241,0.2)" : "rgba(255,255,255,0.05)", border: `1px solid ${selected ? "rgba(99,102,241,0.4)" : "rgba(255,255,255,0.08)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <c.icon size={14} color={selected ? "#818cf8" : "#4b5563"} />
+                  <c.icon size={15} color={selected ? "#818cf8" : "#4b5563"} />
                 </div>
-                <div style={{ fontSize: 11, fontWeight: 600, color: selected ? "#a5b4fc" : "rgba(255,255,255,0.5)", textAlign: "center", lineHeight: 1.2 }}>{c.value}</div>
+                <span style={{ fontSize: 11, fontWeight: selected ? 700 : 500, color: selected ? "#fff" : "#6b7280", whiteSpace: "nowrap" }}>{c.value}</span>
+                {!isMobile && <span style={{ fontSize: 10, color: selected ? "rgba(165,180,252,0.8)" : "#374151" }}>{c.desc}</span>}
               </motion.button>
             )
           })}
@@ -160,11 +167,11 @@ function StepItemInfo({ data, set, errors, isMobile }: { data: FormData; set: (k
               <motion.button key={c} type="button" whileTap={{ scale: 0.93 }}
                 onClick={() => set("color", data.color === c ? "" : c)}
                 style={{
-                  padding: "3px 9px", borderRadius: 7, cursor: "pointer",
-                  border: data.color === c ? "1px solid rgba(99,102,241,0.45)" : "1px solid rgba(255,255,255,0.08)",
-                  background: data.color === c ? "rgba(99,102,241,0.14)" : "rgba(255,255,255,0.03)",
+                  padding: "5px 12px", borderRadius: 20, cursor: "pointer",
+                  border: data.color === c ? `1px solid ${ACCENT_L}0.5)` : "1px solid rgba(255,255,255,0.1)",
+                  background: data.color === c ? `${ACCENT_L}0.12)` : "rgba(255,255,255,0.03)",
                   fontSize: 11, fontWeight: 500,
-                  color: data.color === c ? "#a5b4fc" : "rgba(255,255,255,0.4)",
+                  color: data.color === c ? "#fff" : "#6b7280",
                   fontFamily: "'DM Sans',sans-serif", transition: "all 0.15s",
                 }}>{c}
               </motion.button>
@@ -353,14 +360,14 @@ function StepImages({ data, set }: { data: FormData; set: (k: keyof FormData, v:
         onDragOver={e => { e.preventDefault(); setDragging(true) }}
         onDragLeave={() => setDragging(false)}
         onDrop={e => { e.preventDefault(); setDragging(false); addFiles(e.dataTransfer.files) }}
-        animate={{ borderColor: dragging ? "rgba(99,102,241,0.6)" : "rgba(255,255,255,0.1)", background: dragging ? "rgba(99,102,241,0.07)" : "rgba(255,255,255,0.02)" }}
+        animate={{ borderColor: dragging ? `${ACCENT_L}0.6)` : "rgba(255,255,255,0.1)", background: dragging ? `${ACCENT_L}0.07)` : "rgba(255,255,255,0.02)" }}
         onClick={() => fileRef.current?.click()}
         style={{
           border: "2px dashed rgba(255,255,255,0.1)", borderRadius: 16,
           padding: "36px 24px", textAlign: "center", cursor: "pointer",
           transition: "all 0.2s",
         }}>
-        <div style={{ width: 48, height: 48, borderRadius: 14, background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.2)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
+        <div style={{ width: 48, height: 48, borderRadius: 14, background: `${ACCENT_L}0.1)`, border: `1px solid ${ACCENT_L}0.2)`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
           <Upload size={20} color="#818cf8" />
         </div>
         <div style={{ fontSize: 14, fontWeight: 600, color: "rgba(255,255,255,0.7)", marginBottom: 4 }}>
@@ -405,7 +412,7 @@ function StepImages({ data, set }: { data: FormData; set: (k: keyof FormData, v:
       </AnimatePresence>
 
       {/* Tip */}
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "12px 14px", borderRadius: 12, background: "rgba(99,102,241,0.06)", border: "1px solid rgba(99,102,241,0.16)" }}>
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "12px 14px", borderRadius: 12, background: `${ACCENT_L}0.06)`, border: `1px solid ${ACCENT_L}0.16)` }}>
         <Info size={13} color="#818cf8" style={{ flexShrink: 0, marginTop: 1 }} />
         <p style={{ fontSize: 12, color: "#8b92b8", lineHeight: 1.65, margin: 0 }}>
           Clear photos from multiple angles significantly increase your chances of recovery. Include any distinguishing marks visible in the photos.
@@ -419,51 +426,64 @@ function StepImages({ data, set }: { data: FormData; set: (k: keyof FormData, v:
 function StepReview({ data, isMobile }: { data: FormData; isMobile: boolean }) {
   const cat = CATEGORIES.find(c => c.value === data.category)
   const CatIcon = cat?.icon ?? Tag
+
+  const rows: { label: string; value: string | null }[] = [
+    { label: "Item",        value: data.item_name },
+    { label: "Category",   value: data.category  || null },
+    { label: "Brand",      value: data.brand     || null },
+    { label: "Color",      value: data.color     || null },
+    { label: "Lost At",    value: data.location  },
+    { label: "Spot Detail",value: data.location_detail || null },
+    { label: "Date Lost",  value: data.date_event    || null },
+    { label: "Time Lost",  value: data.time_event    || null },
+    { label: "Reward",     value: data.reward        || null },
+    { label: "Contact",    value: data.contact_phone || null },
+    { label: "Photos",     value: data.images.length > 0 ? `${data.images.length} photo(s) attached` : "No photos" },
+  ]
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      {/* Summary header */}
-      <div style={{ padding: "18px", borderRadius: 14, background: "linear-gradient(135deg,rgba(99,102,241,0.1),rgba(139,92,246,0.07))", border: "1px solid rgba(99,102,241,0.2)" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+      {/* Identity card */}
+      <div style={{ padding: "16px 18px", borderRadius: 14, background: "rgba(99,102,241,0.06)", border: "1px solid rgba(99,102,241,0.2)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
             <CatIcon size={20} color="#818cf8" />
           </div>
           <div>
-            <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", fontFamily: "'Syne',sans-serif", letterSpacing: "-0.3px" }}>{data.item_name || "—"}</div>
-            <div style={{ fontSize: 12, color: "#6366f1", marginTop: 2 }}>{data.category || "No category"} {data.brand ? `· ${data.brand}` : ""} {data.color ? `· ${data.color}` : ""}</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "#fff" }}>{data.item_name || "—"}</div>
+            <div style={{ fontSize: 12, color: "rgba(165,180,252,0.8)", marginTop: 2 }}>{data.category || "No category"}</div>
           </div>
           {data.urgent && (
-            <span style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 5, fontSize: 10, fontWeight: 700, color: "#f87171", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)", padding: "3px 9px", borderRadius: 20 }}>
+            <span style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 5, fontSize: 10, fontWeight: 700, color: "#f87171", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)", padding: "3px 9px", borderRadius: 20, flexShrink: 0 }}>
               <Zap size={9} />URGENT
             </span>
           )}
         </div>
       </div>
 
-      {/* Fields review */}
-      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 10 }}>
-        {[
-          { icon: MapPin,   label: "Location",    value: [data.location, data.location_detail].filter(Boolean).join(", ") || "—" },
-          { icon: Calendar, label: "Date Lost",   value: data.date_event ? new Date(data.date_event).toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"}) : "—" },
-          { icon: Clock,    label: "Time",        value: data.time_event || "Not specified" },
-          { icon: Image,    label: "Photos",      value: `${data.images.length} image${data.images.length !== 1 ? "s" : ""} attached` },
-          { icon: DollarSign,label:"Reward",      value: data.reward || "None" },
-          { icon: Phone,    label: "Contact",     value: data.contact_phone || "Not provided" },
-        ].map((r, i) => (
-          <div key={i} style={{ padding: "10px 12px", borderRadius: 10, background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
-              <r.icon size={11} color="#4b5563" />
-              <span style={{ fontSize: 10, color: "#4b5563", textTransform: "uppercase", letterSpacing: 1, fontWeight: 600 }}>{r.label}</span>
-            </div>
-            <div style={{ fontSize: 12, color: "#c4c9e2", wordBreak: "break-word" }}>{r.value}</div>
+      {/* Field summary rows */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {rows.map(r => r.value && (
+          <div key={r.label} style={{ display: "flex", gap: 12, padding: "8px 12px", borderRadius: 9, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#4b5563", textTransform: "uppercase", letterSpacing: 1, minWidth: isMobile ? 72 : 96, flexShrink: 0 }}>{r.label}</span>
+            <span style={{ fontSize: 12, color: "#9ca3af", flex: 1 }}>{r.value}</span>
           </div>
         ))}
       </div>
 
       {/* Description preview */}
       {data.description && (
-        <div style={{ padding: "12px 14px", borderRadius: 10, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
-          <div style={{ fontSize: 10, color: "#4b5563", textTransform: "uppercase", letterSpacing: 1.2, fontWeight: 700, marginBottom: 6 }}>Description</div>
-          <p style={{ fontSize: 13, color: "#8b92b8", lineHeight: 1.65, margin: 0 }}>{data.description}</p>
+        <div style={{ padding: "12px 14px", borderRadius: 12, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)" }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: "#4b5563", textTransform: "uppercase", letterSpacing: 1.3, marginBottom: 6 }}>Description</div>
+          <p style={{ fontSize: 12, color: "#9ca3af", lineHeight: 1.7, margin: 0 }}>{data.description}</p>
+        </div>
+      )}
+
+      {/* Distinguishing features */}
+      {data.distinguishing && (
+        <div style={{ padding: "12px 14px", borderRadius: 12, background: "rgba(99,102,241,0.04)", border: "1px solid rgba(99,102,241,0.15)" }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(165,180,252,0.7)", textTransform: "uppercase", letterSpacing: 1.3, marginBottom: 6 }}>Distinguishing Features</div>
+          <p style={{ fontSize: 12, color: "#9ca3af", lineHeight: 1.7, margin: 0 }}>{data.distinguishing}</p>
         </div>
       )}
 
@@ -488,8 +508,8 @@ function SuccessScreen({ onNew, isMobile }: { onNew: () => void; isMobile: boole
       {/* Animated ring */}
       <div style={{ position: "relative", marginBottom: 28 }}>
         <motion.div
-          initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: "spring", damping: 12, stiffness: 160 }}
+          initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: "spring", damping: 14, stiffness: 200, delay: 0.1 }}
           style={{ width: 80, height: 80, borderRadius: "50%", background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.3)", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <CheckCircle size={36} color="#818cf8" />
         </motion.div>
@@ -501,24 +521,27 @@ function SuccessScreen({ onNew, isMobile }: { onNew: () => void; isMobile: boole
         ))}
       </div>
 
-      <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: "-0.5px", fontFamily: "'Syne',sans-serif", color: "#fff", marginBottom: 10 }}>
-        Report Submitted!
-      </div>
-      <p style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.7, maxWidth: 320, margin: "0 auto 28px" }}>
-        Your lost item report is now under review. We'll notify you once it's published and if a match is found.
-      </p>
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.22 }}>
+        <div style={{ fontSize: isMobile ? 20 : 24, fontWeight: 800, letterSpacing: "-0.5px", fontFamily: "'Syne',sans-serif", color: "#fff", margin: "0 0 8px" }}>
+          Report Submitted!
+        </div>
+        <p style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.7, maxWidth: 360, margin: "0 auto 28px" }}>
+          Your lost item report is now under review. We'll notify you once it's published and if a match is found.
+        </p>
+      </motion.div>
 
-      {/* CTA buttons */}
-      <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", gap: 10, width: isMobile ? "100%" : "auto", alignItems: "center" }}>
-        <motion.a href="/user-reports" whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.34 }}
+        style={{ display: "flex", flexDirection: isMobile ? "column" : "row", gap: 10, width: isMobile ? "100%" : "auto", alignItems: "center" }}>
+        <a href="/user-reports"
           style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "11px 20px", borderRadius: 12, background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.28)", fontSize: 13, fontWeight: 600, color: "#a5b4fc", textDecoration: "none", cursor: "pointer", width: isMobile ? "100%" : "auto" }}>
           <Eye size={14} />View My Reports
-        </motion.a>
+        </a>
         <motion.button onClick={onNew} whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}
           style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "11px 20px", borderRadius: 12, background: "linear-gradient(135deg,#6366f1,#8b5cf6)", border: "none", fontSize: 13, fontWeight: 600, color: "#fff", cursor: "pointer", fontFamily: "'DM Sans',sans-serif", width: isMobile ? "100%" : "auto" }}>
           <Send size={14} />Report Another Item
         </motion.button>
-      </div>
+      </motion.div>
     </motion.div>
   )
 }
@@ -665,7 +688,7 @@ export default function ReportLost() {
 
         {/* ── Page header ── */}
         <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 28 }}>
-          <div style={{ width: 42, height: 42, borderRadius: 12, background: "linear-gradient(135deg,#6366f1,#8b5cf6)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 16px rgba(99,102,241,0.3)", flexShrink: 0 }}>
+          <div style={{ width: 42, height: 42, borderRadius: 12, background: "linear-gradient(135deg,#6366f1,#8b5cf6)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 16px rgba(99,102,241,0.35)", flexShrink: 0 }}>
             <PackageSearch size={18} color="white" />
           </div>
           <div>
@@ -707,7 +730,7 @@ export default function ReportLost() {
             {/* Step labels */}
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               {STEPS.map(s => (
-                <div key={s.id} style={{ fontSize: 9, fontWeight: 600, color: step === s.id ? "#a5b4fc" : step > s.id ? "#818cf8" : "#374151", textTransform: "uppercase", letterSpacing: 0.8, textAlign: "center", flex: 1 }}>
+                <div key={s.id} style={{ fontSize: 9, fontWeight: 600, color: step === s.id ? "#a5b4fc" : step > s.id ? ACCENT : "#374151", textTransform: "uppercase", letterSpacing: 0.8, textAlign: "center", flex: 1 }}>
                   {s.label}
                 </div>
               ))}
@@ -745,7 +768,7 @@ export default function ReportLost() {
                   <motion.div
                     animate={{ width: `${(step / TOTAL_STEPS) * 100}%` }}
                     transition={{ type: "spring", damping: 22, stiffness: 180 }}
-                    style={{ height: "100%", borderRadius: 2, background: "linear-gradient(90deg,#6366f1,#8b5cf6)" }}
+                    style={{ height: "100%", borderRadius: 2, background: `linear-gradient(90deg,${ACCENT},${ACCENT2})` }}
                   />
                 </div>
               </div>
@@ -796,18 +819,18 @@ export default function ReportLost() {
 
                 {/* Next / Submit */}
                 {step < TOTAL_STEPS ? (
-                  <motion.button whileHover={{ y: -1, boxShadow: "0 8px 24px rgba(99,102,241,0.3)" }} whileTap={{ scale: 0.97 }} onClick={goNext}
-                    style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 22px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#6366f1,#8b5cf6)", fontSize: 13, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: "'DM Sans',sans-serif", boxShadow: "0 4px 16px rgba(99,102,241,0.2)" }}>
+                  <motion.button whileHover={{ y: -1, boxShadow: `0 8px 24px ${ACCENT_L}0.3)` }} whileTap={{ scale: 0.97 }} onClick={goNext}
+                    style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 22px", borderRadius: 10, border: "none", background: `linear-gradient(135deg,${ACCENT},${ACCENT2})`, fontSize: 13, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: "'DM Sans',sans-serif", boxShadow: `0 4px 16px ${ACCENT_L}0.2)` }}>
                     {step === 4 ? (isMobile ? "Review" : "Review Report") : "Continue"}
                     <ChevronRight size={14} />
                   </motion.button>
                 ) : (
                   <motion.button
-                    whileHover={!submitting ? { y: -1, boxShadow: "0 8px 24px rgba(99,102,241,0.35)" } : {}}
+                    whileHover={!submitting ? { y: -1, boxShadow: `0 8px 24px ${ACCENT_L}0.35)` } : {}}
                     whileTap={!submitting ? { scale: 0.97 } : {}}
                     onClick={handleSubmit}
                     disabled={submitting}
-                    style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "10px 24px", borderRadius: 10, border: "none", background: submitting ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg,#6366f1,#8b5cf6)", fontSize: 13, fontWeight: 700, color: submitting ? "rgba(255,255,255,0.3)" : "#fff", cursor: submitting ? "not-allowed" : "pointer", fontFamily: "'DM Sans',sans-serif", transition: "all 0.25s", boxShadow: "0 4px 16px rgba(99,102,241,0.2)", flex: isMobile ? 1 : "none" }}>
+                    style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "10px 24px", borderRadius: 10, border: "none", background: submitting ? "rgba(255,255,255,0.08)" : `linear-gradient(135deg,${ACCENT},${ACCENT2})`, fontSize: 13, fontWeight: 700, color: submitting ? "rgba(255,255,255,0.3)" : "#fff", cursor: submitting ? "not-allowed" : "pointer", fontFamily: "'DM Sans',sans-serif", transition: "all 0.25s", boxShadow: `0 4px 16px ${ACCENT_L}0.2)`, flex: isMobile ? 1 : "none" }}>
                     {submitting ? (
                       <>
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ animation: "rl-spin 0.8s linear infinite" }}>
