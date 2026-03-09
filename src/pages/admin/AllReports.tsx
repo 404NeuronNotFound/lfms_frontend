@@ -882,17 +882,17 @@ export default function AllReports() {
           </div>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
+          <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}
+            onClick={() => setShowMatcher(true)}
+            style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 16px", borderRadius: 10, border: "1px solid rgba(99,102,241,0.35)", background: "rgba(99,102,241,0.1)", fontSize: 13, fontWeight: 600, color: "#a5b4fc", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
+            <Link2 size={13} />{!isMobile && "Match Reports"}
+          </motion.button>
           {!isMobile && (
             <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}
               style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 16px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.55)", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
               <Download size={13} />Export
             </motion.button>
           )}
-          <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}
-            onClick={() => setShowMatcher(true)}
-            style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 16px", borderRadius: 10, border: "1px solid rgba(99,102,241,0.35)", background: "rgba(99,102,241,0.1)", fontSize: 13, fontWeight: 600, color: "#a5b4fc", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
-            <Link2 size={13} />{!isMobile && "Match Reports"}
-          </motion.button>
           <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}
             onClick={() => { fetchReports({ ordering }); fetchStats() }}
             disabled={loadingList}
