@@ -8,7 +8,7 @@ import {
 } from "lucide-react"
 import { useBrowseStore } from "@/store/browseStore"
 import ClaimButton from "@/components/ClaimButton"
-import type { FoundItemListItem, FoundItemDetail } from "@/types/browseTypes"
+import type { FoundItemListItem, FoundItemDetail, ClaimStatusValue } from "@/types/browseTypes"
 import type { ReportCategory } from "@/types/reportTypes"
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -76,7 +76,7 @@ function fmtTime(t: string) {
 // ─────────────────────────────────────────────────────────────────────────────
 //  CLAIM STATUS BADGE
 // ─────────────────────────────────────────────────────────────────────────────
-function ClaimBadge({ status }: { status: "pending" | "approved" | "rejected" }) {
+function ClaimBadge({ status }: { status: ClaimStatusValue }) {
   const cfg = {
     approved: { color: "#34d399", bg: "rgba(52,211,153,0.1)",  border: "rgba(52,211,153,0.25)",  label: "Claim Approved",     icon: CheckCircle },
     pending:  { color: "#fbbf24", bg: "rgba(251,191,36,0.1)",  border: "rgba(251,191,36,0.25)",  label: "Under Review",       icon: Clock       },
@@ -143,11 +143,17 @@ function ItemCard({ item, onClick, index }: { item: FoundItemListItem; onClick: 
         )}
 
         {/* Claim status overlay */}
-        {(item.my_claim_status === "pending" || item.my_claim_status === "approved") && (
+        {item.is_own_report ? (
+          <div style={{ position: "absolute", top: 10, right: 10 }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 9px", borderRadius: 20, background: "rgba(99,102,241,0.85)", backdropFilter: "blur(8px)", fontSize: 9, fontWeight: 700, color: "#fff", letterSpacing: 0.5 }}>
+              ★ Found by You
+            </span>
+          </div>
+        ) : (item.my_claim_status === "pending" || item.my_claim_status === "approved") ? (
           <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(2px)", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <ClaimBadge status={item.my_claim_status} />
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* Info */}
@@ -299,7 +305,12 @@ function DetailDrawer({ isMobile }: { isMobile: boolean }) {
                             <Zap size={9} />URGENT
                           </span>
                         )}
-                        {item.my_claim_status && item.my_claim_status !== null && <ClaimBadge status={item.my_claim_status as "pending" | "approved" | "rejected"} />}
+                        {item.is_own_report
+                          ? <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 9px", borderRadius: 20, background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.3)", fontSize: 10, fontWeight: 700, color: "#a5b4fc" }}>★ Found by You</span>
+                          : item.my_claim_status
+                            ? <ClaimBadge status={item.my_claim_status as "pending" | "approved" | "rejected"} />
+                            : null
+                        }
                       </div>
                       <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", fontFamily: "'Syne',sans-serif", letterSpacing: "-0.3px", marginBottom: 4 }}>{item.item_name}</div>
                       <div style={{ fontSize: 11, color: "#4b5563" }}>
@@ -399,13 +410,27 @@ function DetailDrawer({ isMobile }: { isMobile: boolean }) {
                 {/* Claim / status area */}
                 {/* Claim / status area */}
                 {(() => {
+                  // Finder sees a special badge — cannot claim their own report
+                  if (item.is_own_report) {
+                    return (
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "13px 16px", borderRadius: 12, background: "rgba(99,102,241,0.08)", border: "1px solid rgba(99,102,241,0.25)" }}>
+                        <div style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(99,102,241,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          <CheckCircle size={16} color="#818cf8" />
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 12, fontWeight: 700, color: "#a5b4fc", marginBottom: 2 }}>Found by You</div>
+                          <div style={{ fontSize: 11, color: "#4b5563", lineHeight: 1.5 }}>You reported this item as found. An admin will match it with its owner.</div>
+                        </div>
+                      </div>
+                    )
+                  }
+
                   const claimStatus = item.my_claim_status
+                  const canClaim = item.status === "open" || item.status === "under_review" || item.status === "matched"
 
                   if (claimStatus === "pending" || claimStatus === "approved") {
                     return <ClaimBadge status={claimStatus} />
                   }
-
-                  const canClaim = item.status === "open" || item.status === "under_review" || item.status === "matched"
 
                   if (claimStatus === "rejected") {
                     return (
@@ -428,7 +453,6 @@ function DetailDrawer({ isMobile }: { isMobile: boolean }) {
                     )
                   }
 
-                  // No claim yet
                   if (canClaim) {
                     return (
                       <ClaimButton

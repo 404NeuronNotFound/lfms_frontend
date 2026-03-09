@@ -84,7 +84,6 @@ const STATUS_ACTIONS: Record<ReportStatus, { status: ReportStatus; label: string
     { status: "rejected",     label: "Reject Report",        color: "#f87171", icon: XCircle     },
   ],
   under_review: [
-    { status: "matched",      label: "Mark as Matched",      color: "#818cf8", icon: CheckCircle },
     { status: "closed",       label: "Close Report",         color: "#6b7280", icon: Ban         },
     { status: "rejected",     label: "Reject Report",        color: "#f87171", icon: XCircle     },
   ],
@@ -537,18 +536,25 @@ function ReviewDrawer({
                     {/* Match actions */}
                     <div>
                       <div style={{ fontSize: 10, fontWeight: 700, color: "#4b5563", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 10 }}>Matching</div>
-                      {r.status === "matched" ? (
+
+                      {/* Always show partner link if it exists — survives status changes */}
+                      {r.matched_report ? (
                         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                          {/* Matched partner info */}
-                          {r.matched_report && (
-                            <div style={{ padding: "10px 14px", borderRadius: 10, background: "rgba(99,102,241,0.07)", border: "1px solid rgba(99,102,241,0.2)", fontSize: 12, color: "#a5b4fc" }}>
-                              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                                <Link2 size={11} color="#818cf8" />
-                                <span style={{ fontWeight: 700, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.8 }}>Matched With</span>
-                              </div>
-                              <div style={{ color: "#c4c9e2", fontWeight: 600 }}>Report #{typeof r.matched_report === "number" ? r.matched_report : (r.matched_report as any)?.id}</div>
+                          <div style={{ padding: "10px 14px", borderRadius: 10, background: "rgba(99,102,241,0.07)", border: "1px solid rgba(99,102,241,0.2)" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+                              <Link2 size={11} color="#818cf8" />
+                              <span style={{ fontWeight: 700, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.8, color: "#818cf8" }}>Matched With</span>
                             </div>
-                          )}
+                            <div style={{ color: "#c4c9e2", fontWeight: 600, fontSize: 12 }}>
+                              Report #{typeof r.matched_report === "number" ? r.matched_report : (r.matched_report as any)?.id}
+                            </div>
+                            {r.status === "under_review" && (
+                              <div style={{ marginTop: 6, fontSize: 11, color: "#fbbf24", display: "flex", alignItems: "center", gap: 5 }}>
+                                <Clock size={10} color="#fbbf24" />
+                                Claim submitted — both reports under review
+                              </div>
+                            )}
+                          </div>
                           <motion.button whileHover={{ x: 2 }} whileTap={{ scale: 0.98 }}
                             onClick={async () => {
                               try {

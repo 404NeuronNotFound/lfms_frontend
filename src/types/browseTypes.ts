@@ -44,6 +44,7 @@ export interface FoundItemListItem {
   found_stored_at: string | null
   user_info:       { id: number; username: string; name: string }
   my_claim_status: MyClaimStatus
+  is_own_report:   boolean
 }
 
 export interface FoundItemDetail extends FoundItemListItem {
