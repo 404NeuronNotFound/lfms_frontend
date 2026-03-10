@@ -101,7 +101,7 @@ function ItemCard({ item, onClick, index }: { item: FoundItemListItem; onClick: 
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.04 }}
-      whileHover={{ y: -2, borderColor: "rgba(16,185,129,0.35)" }}
+      whileHover={{ y: -2, borderColor: item.status === "matched" ? "rgba(16,185,129,0.35)" : "rgba(255,255,255,0.14)" }}
       onClick={onClick}
       style={{
         borderRadius: 16, cursor: "pointer",
@@ -403,14 +403,15 @@ function DetailDrawer({ isMobile }: { isMobile: boolean }) {
                 <div style={{ display: "flex", gap: 10, padding: "12px 14px", borderRadius: 12, background: "rgba(16,185,129,0.06)", border: "1px solid rgba(16,185,129,0.18)" }}>
                   <Info size={13} color="#34d399" style={{ flexShrink: 0, marginTop: 1 }} />
                   <p style={{ fontSize: 12, color: "#6ee7b7", lineHeight: 1.65, margin: 0 }}>
-                    If this item belongs to you, click <strong>Claim This Item</strong> below and describe how you can prove ownership. The report will move to <strong>Under Review</strong> and an admin will verify your claim.
+                    {item.status === "matched"
+                      ? <>An admin has matched this item with a lost report. If this item belongs to you, click <strong>Claim This Item</strong> and describe how you can prove ownership.</>
+                      : <>This item hasn't been matched with a lost report yet. An admin must match it first before it can be claimed.</>
+                    }
                   </p>
                 </div>
 
                 {/* Claim / status area */}
-                {/* Claim / status area */}
                 {(() => {
-                  // Finder sees a special badge — cannot claim their own report
                   if (item.is_own_report) {
                     return (
                       <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "13px 16px", borderRadius: 12, background: "rgba(99,102,241,0.08)", border: "1px solid rgba(99,102,241,0.25)" }}>
@@ -426,7 +427,8 @@ function DetailDrawer({ isMobile }: { isMobile: boolean }) {
                   }
 
                   const claimStatus = item.my_claim_status
-                  const canClaim = item.status === "open" || item.status === "under_review" || item.status === "matched"
+                  // Only matched reports can be claimed
+                  const canClaim = item.status === "matched"
 
                   if (claimStatus === "pending" || claimStatus === "approved") {
                     return <ClaimBadge status={claimStatus} />
@@ -460,6 +462,21 @@ function DetailDrawer({ isMobile }: { isMobile: boolean }) {
                         reportName={item.item_name}
                         onSuccess={() => markClaimed(item.id)}
                       />
+                    )
+                  }
+
+                  // open / under_review / claimed / closed — not claimable
+                  if (item.status === "open" || item.status === "under_review") {
+                    return (
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "13px 16px", borderRadius: 12, background: "rgba(251,191,36,0.06)", border: "1px solid rgba(251,191,36,0.2)" }}>
+                        <Clock size={14} color="#fbbf24" style={{ flexShrink: 0 }} />
+                        <div>
+                          <div style={{ fontSize: 12, fontWeight: 700, color: "#fbbf24", marginBottom: 2 }}>Awaiting Admin Match</div>
+                          <p style={{ fontSize: 11, color: "#78350f", margin: 0, lineHeight: 1.5 }}>
+                            An admin needs to match this found item with a lost report before it can be claimed.
+                          </p>
+                        </div>
+                      </div>
                     )
                   }
 
