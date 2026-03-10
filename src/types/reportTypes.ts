@@ -256,10 +256,11 @@ export interface DeleteReportResponse {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export interface MatchScoreBreakdown {
-  category: number
-  name:     number
-  location: number
-  date:     number
+  category:    number
+  name:        number
+  description: number
+  location:    number
+  date:        number
 }
 
 export interface ReportSummary {
@@ -272,17 +273,18 @@ export interface ReportSummary {
 }
 
 export interface MatchSuggestion {
-  id:                   number
+  id:                   number | null    // null for fresh Claude AI suggestions (no DB row yet)
   lost_report:          number
   lost_report_summary:  ReportSummary
   found_report:         number
   found_report_summary: ReportSummary
-  score:                number         // 0.0 – 1.0
+  score:                number           // 0.0 – 1.0
   score_breakdown:      MatchScoreBreakdown
   confidence:           MatchConfidence
+  reasoning?:           string           // Claude's one-line explanation
   status:               MatchSuggestionStatus
-  created_at:           string
-  updated_at:           string
+  created_at?:          string
+  updated_at?:          string
 }
 
 export interface MatchRunResponse {

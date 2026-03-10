@@ -1,12 +1,15 @@
 import { authFetch } from "@/api/authApi"
 import type {
   AdminLostReport,
+  AdminLostReportListItem,
   AdminReportListResponse,
   AdminReportStats,
   AdminUpdateReportPayload,
   AdminUpdateReportResponse,
   ReportStatus,
   ReportCategory,
+  MatchSuggestion,
+  MatchRunResponse,
 } from "@/types/reportTypes"
 
 const BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000/api"
@@ -146,4 +149,66 @@ export async function adminGetReportsByType(
   if (search) params.set("search", search)
   const res = await authFetch(`${BASE}/admin/reports/?${params}`)
   return handleResponse(res)
+}
+
+// ── AI Match Engine ───────────────────────────────────────────────────────────
+
+/**
+ * POST /api/admin/match/run/<report_id>/
+ * Runs the AI scoring engine for a report and returns up to 5 suggestions.
+ */
+export async function adminRunMatch(reportId: number): Promise<MatchRunResponse> {
+  const res = await authFetch(`${BASE}/admin/match/run/${reportId}/`, { method: "POST" })
+  return handleResponse<MatchRunResponse>(res)
+}
+
+/**
+ * POST /api/admin/match/confirm/<suggestion_id>/
+ * If suggestionId is null (Claude AI result with no prior DB row),
+ * posts to /confirm/0/ with full report IDs and score data.
+ */
+export async function adminConfirmMatch(
+  suggestionId: number | null,
+  suggestion?: MatchSuggestion,
+): Promise<{ message: string; suggestion: MatchSuggestion }> {
+  if (suggestionId === null || suggestionId === undefined) {
+    // AI path — create + confirm in one shot using report IDs
+    const res = await authFetch(`${BASE}/admin/match/confirm/0/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        lost_report_id:  suggestion?.lost_report,
+        found_report_id: suggestion?.found_report,
+        score:           suggestion?.score,
+        confidence:      suggestion?.confidence,
+        score_breakdown: suggestion?.score_breakdown,
+      }),
+    })
+    return handleResponse(res)
+  }
+  const res = await authFetch(`${BASE}/admin/match/confirm/${suggestionId}/`, { method: "POST" })
+  return handleResponse(res)
+}
+
+/**
+ * POST /api/admin/match/dismiss/<suggestion_id>/
+ */
+export async function adminDismissMatch(
+  suggestionId: number | null,
+): Promise<{ message: string }> {
+  if (suggestionId === null || suggestionId === undefined) {
+    // Nothing to dismiss if no DB row yet — just return success
+    return { message: "dismissed" }
+  }
+  const res = await authFetch(`${BASE}/admin/match/dismiss/${suggestionId}/`, { method: "POST" })
+  return handleResponse(res)
+}
+
+/**
+ * GET /api/admin/match/suggestions/<report_id>/
+ * Returns existing pending suggestions for a report (without re-running).
+ */
+export async function adminGetSuggestions(reportId: number): Promise<MatchRunResponse> {
+  const res = await authFetch(`${BASE}/admin/match/suggestions/${reportId}/`)
+  return handleResponse<MatchRunResponse>(res)
 }

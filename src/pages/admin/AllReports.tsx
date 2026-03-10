@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import MatchManager from "@/components/MatchManager"
-import { adminUnmatch } from "@/api/adminReportApi"
+import { adminUnmatch, adminRunMatch, adminConfirmMatch, adminDismissMatch, adminGetSuggestions } from "@/api/adminReportApi"
 import {
   ClipboardList, Search, Eye, CheckCircle, XCircle, Clock,
   MapPin, Tag, Calendar, AlertTriangle, Package, X,
   RefreshCw, Zap, Hash, Layers, FileText, Flag, TrendingUp,
   Sparkles, Phone, Mail, Image, DollarSign, ShieldCheck,
   User, MessageSquare, Trash2, Check, Ban, Filter, Download,
-  Link2, Unlink,
+  Link2, Unlink, Activity, Cpu, ChevronDown,
+  Brain, BarChart2, ThumbsDown, ThumbsUp,
 } from "lucide-react"
 import { useAdminReportStore } from "@/store/adminReportStore"
 import type {
@@ -16,6 +17,7 @@ import type {
   ReportStatus,
   ReportCategory,
   ReportType,
+  MatchSuggestion,
 } from "@/types/reportTypes"
 import type { AdminReportFilters } from "@/api/adminReportApi"
 
@@ -213,12 +215,363 @@ function InfoRow({ icon: Icon, label, children }: { icon: React.ElementType; lab
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+//  AI MATCH PANEL
+// ─────────────────────────────────────────────────────────────────────────────
+
+type AiPhase = "idle" | "loading" | "results" | "error"
+
+function ScoreBar({ label, value, color }: { label: string; value: number; color: string }) {
+  const pct = Math.round(value * 100)
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <span style={{ fontSize: 9, fontWeight: 700, color: "#374151", textTransform: "uppercase", letterSpacing: 0.8, width: 54, flexShrink: 0 }}>{label}</span>
+      <div style={{ flex: 1, height: 4, borderRadius: 2, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${pct}%` }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          style={{ height: "100%", borderRadius: 2, background: color }}
+        />
+      </div>
+      <span style={{ fontSize: 9, color, fontWeight: 700, width: 28, textAlign: "right", flexShrink: 0 }}>{pct}%</span>
+    </div>
+  )
+}
+
+function ConfidenceBadge({ confidence }: { confidence: "high" | "medium" | "low" }) {
+  const cfg = {
+    high:   { color: "#34d399", bg: "rgba(52,211,153,0.12)",  border: "rgba(52,211,153,0.3)",  label: "High Match"   },
+    medium: { color: "#fbbf24", bg: "rgba(251,191,36,0.12)",  border: "rgba(251,191,36,0.3)",  label: "Possible Match" },
+    low:    { color: "#f87171", bg: "rgba(248,113,113,0.12)", border: "rgba(248,113,113,0.3)", label: "Weak Match"   },
+  }[confidence]
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 9px", borderRadius: 20, background: cfg.bg, border: `1px solid ${cfg.border}`, fontSize: 10, fontWeight: 700, color: cfg.color, letterSpacing: 0.3 }}>
+      <span style={{ width: 5, height: 5, borderRadius: "50%", background: cfg.color, flexShrink: 0 }} />
+      {cfg.label}
+    </span>
+  )
+}
+
+function AiMatchPanel({
+  reportId,
+  reportType,
+  onConfirmed,
+  autoRun,
+}: {
+  reportId: number
+  reportType: "lost" | "found"
+  onConfirmed: () => void
+  autoRun?: boolean
+}) {
+  const [phase,       setPhase]       = useState<AiPhase>("idle")
+  const [suggestions, setSuggestions] = useState<MatchSuggestion[]>([])
+  const [error,       setError]       = useState("")
+  const [actioning,   setActioning]   = useState<number | null>(null)
+  const [expanded,    setExpanded]    = useState<number | null>(null)
+
+  async function runEngine() {
+    setPhase("loading"); setError("")
+    try {
+      const res = await adminRunMatch(reportId)
+      setSuggestions(res.suggestions)
+      setPhase(res.suggestions.length > 0 ? "results" : "idle")
+      if (res.suggestions.length === 0) setError("No matching candidates found. Try again after more reports are submitted.")
+    } catch (e: any) {
+      setError(e.message ?? "Engine failed.")
+      setPhase("error")
+    }
+  }
+
+  // On mount: if autoRun flag is set, fire engine immediately; otherwise restore existing suggestions
+  useEffect(() => {
+    if (autoRun) {
+      runEngine()
+    } else {
+      setPhase("loading")
+      adminGetSuggestions(reportId)
+        .then(res => {
+          setSuggestions(res.suggestions)
+          setPhase(res.suggestions.length > 0 ? "results" : "idle")
+        })
+        .catch(() => setPhase("idle"))
+    }
+  }, [reportId])
+
+  async function confirm(suggestion: MatchSuggestion) {
+    const key = suggestion.id ?? `${suggestion.lost_report}-${suggestion.found_report}`
+    setActioning(key as any)
+    try {
+      await adminConfirmMatch(suggestion.id ?? null, suggestion)
+      setSuggestions(p => p.filter(s => s.id !== suggestion.id ||
+        (s.lost_report === suggestion.lost_report && s.found_report === suggestion.found_report ? false : true)))
+      onConfirmed()
+    } catch (e: any) {
+      alert(e.message ?? "Failed to confirm.")
+    } finally {
+      setActioning(null)
+    }
+  }
+
+  async function dismiss(suggestion: MatchSuggestion) {
+    const key = suggestion.id ?? `${suggestion.lost_report}-${suggestion.found_report}`
+    setActioning(key as any)
+    try {
+      await adminDismissMatch(suggestion.id ?? null)
+      setSuggestions(p => p.filter(s =>
+        !(s.lost_report === suggestion.lost_report && s.found_report === suggestion.found_report)
+      ))
+    } catch (e: any) {
+      alert(e.message ?? "Failed to dismiss.")
+    } finally {
+      setActioning(null)
+    }
+  }
+
+  const counterpartLabel = reportType === "lost" ? "Found" : "Lost"
+  const accentColor      = reportType === "lost" ? "#818cf8" : "#34d399"
+  const accentBg         = reportType === "lost" ? "rgba(99,102,241,0.08)" : "rgba(16,185,129,0.08)"
+  const accentBorder     = reportType === "lost" ? "rgba(99,102,241,0.25)" : "rgba(16,185,129,0.25)"
+
+  return (
+    <div style={{ borderRadius: 14, border: "1px solid rgba(129,140,248,0.2)", background: "rgba(6,6,15,0.6)", overflow: "hidden" }}>
+      {/* Header row */}
+      <div style={{ padding: "12px 16px", background: "rgba(99,102,241,0.06)", borderBottom: "1px solid rgba(99,102,241,0.12)", display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <Cpu size={13} color="#818cf8" />
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#a5b4fc" }}>AI Match Engine</div>
+          <div style={{ fontSize: 9, color: "#374151" }}>
+            {phase === "results" && suggestions.length > 0
+              ? `${suggestions.length} suggestion${suggestions.length !== 1 ? "s" : ""} found`
+              : "Scored matches for this report"
+            }
+          </div>
+        </div>
+        <motion.button
+          whileHover={phase !== "loading" ? { y: -1, boxShadow: "0 4px 14px rgba(99,102,241,0.3)" } : {}}
+          whileTap={phase !== "loading" ? { scale: 0.96 } : {}}
+          onClick={runEngine}
+          disabled={phase === "loading"}
+          style={{
+            display: "flex", alignItems: "center", gap: 6,
+            padding: "6px 13px", borderRadius: 8, border: "none",
+            background: phase === "loading" ? "rgba(255,255,255,0.06)" : "linear-gradient(135deg,#6366f1,#8b5cf6)",
+            fontSize: 11, fontWeight: 700,
+            color: phase === "loading" ? "rgba(255,255,255,0.3)" : "#fff",
+            cursor: phase === "loading" ? "not-allowed" : "pointer",
+            fontFamily: "'DM Sans',sans-serif", flexShrink: 0, transition: "all 0.2s",
+          }}>
+          {phase === "loading"
+            ? <><motion.div animate={{ rotate: 360 }} transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}><RefreshCw size={11} /></motion.div>Scanning…</>
+            : <><Sparkles size={11} />{phase === "results" && suggestions.length > 0 ? "Re-run" : "Run AI Match"}</>
+          }
+        </motion.button>
+      </div>
+
+      {/* Body */}
+      <div style={{ padding: phase === "idle" && !error && suggestions.length === 0 ? "14px 16px" : "10px 12px", display: "flex", flexDirection: "column", gap: 8 }}>
+
+        {/* Idle / empty */}
+        {phase === "idle" && suggestions.length === 0 && !error && (
+          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "4px 0" }}>
+            <Activity size={13} color="#1f2937" style={{ flexShrink: 0 }} />
+            <p style={{ fontSize: 11, color: "#374151", margin: 0, lineHeight: 1.5 }}>
+              Click <strong style={{ color: "#818cf8" }}>Run AI Match</strong> to scan for {counterpartLabel.toLowerCase()} reports that might match this one. Scores are based on category, name, location and date.
+            </p>
+          </div>
+        )}
+
+        {/* Error */}
+        {(phase === "error" || (phase === "idle" && error)) && (
+          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", borderRadius: 9, background: "rgba(239,68,68,0.07)", border: "1px solid rgba(239,68,68,0.22)" }}>
+            <AlertTriangle size={12} color="#f87171" style={{ flexShrink: 0 }} />
+            <span style={{ fontSize: 11, color: "#f87171", lineHeight: 1.4 }}>{error}</span>
+          </div>
+        )}
+
+        {/* Suggestion cards */}
+        <AnimatePresence mode="popLayout">
+          {suggestions.map((s, idx) => {
+            const isExpanded  = expanded === s.id
+            const isActioning = actioning === (s.id ?? `${s.lost_report}-${s.found_report}` as any)
+            const other       = reportType === "lost" ? s.found_report_summary : s.lost_report_summary
+            const pct         = Math.round(s.score * 100)
+            const alreadyConfirmed = s.status === "confirmed"
+            const scoreColor  = s.confidence === "high" ? "#34d399" : s.confidence === "medium" ? "#fbbf24" : "#f87171"
+
+            return (
+              <motion.div
+                key={s.id}
+                layout
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: -4 }}
+                transition={{ delay: idx * 0.04 }}
+                style={{
+                  borderRadius: 11,
+                  border: `1px solid ${alreadyConfirmed ? "rgba(52,211,153,0.3)" : "rgba(255,255,255,0.07)"}`,
+                  background: alreadyConfirmed ? "rgba(52,211,153,0.05)" : "rgba(255,255,255,0.02)",
+                  overflow: "hidden",
+                }}
+              >
+                {/* Card header — always visible */}
+                <div
+                  onClick={() => setExpanded(isExpanded ? null : s.id)}
+                  style={{ padding: "10px 12px", cursor: "pointer", display: "flex", alignItems: "flex-start", gap: 10 }}
+                >
+                  {/* Score ring */}
+                  <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, paddingTop: 2 }}>
+                    <div style={{
+                      width: 38, height: 38, borderRadius: "50%",
+                      background: `conic-gradient(${scoreColor} ${pct * 3.6}deg, rgba(255,255,255,0.05) 0deg)`,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      boxShadow: `0 0 0 2px rgba(6,6,15,1), 0 0 0 3px ${scoreColor}44`,
+                    }}>
+                      <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#09090f", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <span style={{ fontSize: 9, fontWeight: 800, color: scoreColor, fontFamily: "'Syne',sans-serif" }}>{pct}%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Item info */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4, flexWrap: "wrap" }}>
+                      <ConfidenceBadge confidence={s.confidence as any} />
+                      <span style={{ fontSize: 9, color: "#374151", display: "flex", alignItems: "center", gap: 3, marginLeft: "auto" }}>
+                        #{other.id}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: "#e2e8f0", letterSpacing: "-0.1px", marginBottom: 3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {other.item_name}
+                    </div>
+                    <div style={{ fontSize: 10, color: "#4b5563", display: "flex", alignItems: "center", gap: 4 }}>
+                      <MapPin size={8} />
+                      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{other.location}</span>
+                    </div>
+                  </div>
+
+                  {/* Expand chevron */}
+                  <motion.div animate={{ rotate: isExpanded ? 180 : 0 }} transition={{ duration: 0.2 }} style={{ flexShrink: 0, paddingTop: 4 }}>
+                    <ChevronDown size={13} color="#374151" />
+                  </motion.div>
+                </div>
+
+                {/* Expandable detail */}
+                <AnimatePresence>
+                  {isExpanded && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      style={{ overflow: "hidden" }}
+                    >
+                      <div style={{ padding: "0 12px 12px", display: "flex", flexDirection: "column", gap: 10, borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+
+                        {/* Score breakdown bars */}
+                        <div style={{ paddingTop: 10, display: "flex", flexDirection: "column", gap: 7 }}>
+                          <div style={{ fontSize: 9, fontWeight: 700, color: "#374151", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 2 }}>Score Breakdown</div>
+                          <ScoreBar label="Category"    value={s.score_breakdown.category}    color="#818cf8" />
+                          <ScoreBar label="Name"        value={s.score_breakdown.name}        color="#a78bfa" />
+                          <ScoreBar label="Description" value={s.score_breakdown.description ?? 0.3} color="#34d399" />
+                          <ScoreBar label="Location"    value={s.score_breakdown.location}    color="#38bdf8" />
+                          <ScoreBar label="Date"        value={s.score_breakdown.date}        color="#fbbf24" />
+                        </div>
+
+                        {/* Counterpart snapshot */}
+                        <div style={{ padding: "10px 12px", borderRadius: 9, background: accentBg, border: `1px solid ${accentBorder}` }}>
+                          <div style={{ fontSize: 9, fontWeight: 700, color: accentColor, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>
+                            {counterpartLabel} Report #{other.id}
+                          </div>
+                          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                            {[
+                              { icon: Tag,      label: other.category  },
+                              { icon: MapPin,   label: other.location  },
+                              { icon: Calendar, label: new Date(other.date_event).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) },
+                            ].map((row, i) => (
+                              <div key={i} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#6b7280" }}>
+                                <row.icon size={9} color="#374151" style={{ flexShrink: 0 }} />
+                                <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{row.label}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Claude's reasoning */}
+                        {s.reasoning && (
+                          <div style={{ display: "flex", alignItems: "flex-start", gap: 8, padding: "8px 11px", borderRadius: 9, background: "rgba(99,102,241,0.06)", border: "1px solid rgba(99,102,241,0.15)" }}>
+                            <Brain size={10} color="#818cf8" style={{ flexShrink: 0, marginTop: 2 }} />
+                            <span style={{ fontSize: 11, color: "#a5b4fc", lineHeight: 1.5, fontStyle: "italic" }}>{s.reasoning}</span>
+                          </div>
+                        )}
+
+                        {/* Action buttons */}
+                        {!alreadyConfirmed && (
+                          <div style={{ display: "flex", gap: 8 }}>
+                            <motion.button
+                              whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}
+                              onClick={() => dismiss(s)}
+                              disabled={isActioning}
+                              style={{
+                                flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                                padding: "8px 0", borderRadius: 9,
+                                border: "1px solid rgba(239,68,68,0.25)", background: "rgba(239,68,68,0.07)",
+                                fontSize: 11, fontWeight: 600, color: "#f87171",
+                                cursor: isActioning ? "not-allowed" : "pointer", fontFamily: "'DM Sans',sans-serif",
+                                opacity: isActioning ? 0.5 : 1,
+                              }}>
+                              {isActioning
+                                ? <RefreshCw size={11} style={{ animation: "ar-spin 0.8s linear infinite" }} />
+                                : <><XCircle size={11} />Dismiss</>
+                              }
+                            </motion.button>
+                            <motion.button
+                              whileHover={{ y: -1, boxShadow: "0 4px 14px rgba(99,102,241,0.3)" }}
+                              whileTap={{ scale: 0.97 }}
+                              onClick={() => confirm(s)}
+                              disabled={isActioning}
+                              style={{
+                                flex: 2, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                                padding: "8px 0", borderRadius: 9, border: "none",
+                                background: isActioning ? "rgba(255,255,255,0.06)" : "linear-gradient(135deg,#6366f1,#8b5cf6)",
+                                fontSize: 11, fontWeight: 700,
+                                color: isActioning ? "rgba(255,255,255,0.3)" : "#fff",
+                                cursor: isActioning ? "not-allowed" : "pointer", fontFamily: "'DM Sans',sans-serif",
+                              }}>
+                              {isActioning
+                                ? <RefreshCw size={11} style={{ animation: "ar-spin 0.8s linear infinite" }} />
+                                : <><Check size={11} />Confirm Match</>
+                              }
+                            </motion.button>
+                          </div>
+                        )}
+                        {alreadyConfirmed && (
+                          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#34d399" }}>
+                            <CheckCircle size={11} />Match already confirmed
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            )
+          })}
+        </AnimatePresence>
+      </div>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 //  REVIEW DRAWER
 // ─────────────────────────────────────────────────────────────────────────────
 function ReviewDrawer({
-  reportId, onClose, isMobile, onDeleteRequest, onUnmatched, onOpenMatcher,
+  reportId, onClose, isMobile, onDeleteRequest, onUnmatched, onOpenMatcher, autoRunAi,
 }: {
   reportId: number | null
+  autoRunAi?: boolean
   onClose: () => void
   isMobile: boolean
   onDeleteRequest: (id: number, name: string) => void
@@ -533,25 +886,34 @@ function ReviewDrawer({
                   </div>
 
                   <div style={{ padding: "18px 18px 20px", display: "flex", flexDirection: "column", gap: 16 }}>
-                    {/* Match actions */}
-                    <div>
-                      <div style={{ fontSize: 10, fontWeight: 700, color: "#4b5563", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 10 }}>Matching</div>
 
-                      {/* Always show partner link if it exists — survives status changes */}
+                    {/* ── MATCHING SECTION ── */}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: "#4b5563", textTransform: "uppercase", letterSpacing: 1.2 }}>Matching</div>
+
+                      {/* Already matched — show partner card + unmatch */}
                       {r.matched_report ? (
                         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                          <div style={{ padding: "10px 14px", borderRadius: 10, background: "rgba(99,102,241,0.07)", border: "1px solid rgba(99,102,241,0.2)" }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-                              <Link2 size={11} color="#818cf8" />
-                              <span style={{ fontWeight: 700, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.8, color: "#818cf8" }}>Matched With</span>
-                            </div>
-                            <div style={{ color: "#c4c9e2", fontWeight: 600, fontSize: 12 }}>
-                              Report #{typeof r.matched_report === "number" ? r.matched_report : (r.matched_report as any)?.id}
+                          <div style={{ padding: "12px 14px", borderRadius: 12, background: "linear-gradient(135deg,rgba(99,102,241,0.1),rgba(139,92,246,0.06))", border: "1px solid rgba(99,102,241,0.25)" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 8 }}>
+                              <div style={{ width: 22, height: 22, borderRadius: 6, background: "rgba(99,102,241,0.2)", border: "1px solid rgba(99,102,241,0.35)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                <Link2 size={11} color="#818cf8" />
+                              </div>
+                              <span style={{ fontWeight: 700, fontSize: 11, color: "#818cf8", letterSpacing: 0.4 }}>Matched with Report</span>
+                              <span style={{ fontSize: 11, color: "#a5b4fc", fontWeight: 800, marginLeft: "auto", fontFamily: "'Syne',sans-serif" }}>
+                                #{typeof r.matched_report === "number" ? r.matched_report : (r.matched_report as any)?.id}
+                              </span>
                             </div>
                             {r.status === "under_review" && (
-                              <div style={{ marginTop: 6, fontSize: 11, color: "#fbbf24", display: "flex", alignItems: "center", gap: 5 }}>
-                                <Clock size={10} color="#fbbf24" />
+                              <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 10px", borderRadius: 8, background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.2)", fontSize: 11, color: "#fbbf24" }}>
+                                <Clock size={10} color="#fbbf24" style={{ flexShrink: 0 }} />
                                 Claim submitted — both reports under review
+                              </div>
+                            )}
+                            {r.status === "claimed" && (
+                              <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 10px", borderRadius: 8, background: "rgba(52,211,153,0.07)", border: "1px solid rgba(52,211,153,0.2)", fontSize: 11, color: "#34d399" }}>
+                                <CheckCircle size={10} color="#34d399" style={{ flexShrink: 0 }} />
+                                Claim approved — item returned to owner
                               </div>
                             )}
                           </div>
@@ -565,20 +927,42 @@ function ReviewDrawer({
                                 alert(e.message ?? "Failed to unmatch.")
                               }
                             }}
-                            style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(239,68,68,0.3)", background: "rgba(239,68,68,0.07)", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
-                            <Unlink size={14} color="#f87171" />
-                            <span style={{ fontSize: 13, fontWeight: 600, color: "#f87171", flex: 1, textAlign: "left" }}>Unmatch Reports</span>
+                            style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(239,68,68,0.25)", background: "rgba(239,68,68,0.06)", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
+                            <Unlink size={13} color="#f87171" />
+                            <span style={{ fontSize: 12, fontWeight: 600, color: "#f87171", flex: 1, textAlign: "left" }}>Unmatch Reports</span>
                           </motion.button>
                         </div>
                       ) : (
-                        <motion.button whileHover={{ x: 2 }} whileTap={{ scale: 0.98 }}
-                          onClick={() => onOpenMatcher()}
-                          style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(99,102,241,0.3)", background: "rgba(99,102,241,0.07)", cursor: "pointer", fontFamily: "'DM Sans',sans-serif", width: "100%" }}>
-                          <Link2 size={14} color="#818cf8" />
-                          <span style={{ fontSize: 13, fontWeight: 600, color: "#a5b4fc", flex: 1, textAlign: "left" }}>
-                            Match with {r.report_type === "lost" ? "a Found" : "a Lost"} Report
-                          </span>
-                        </motion.button>
+                        /* Not matched yet — show AI panel + manual match button */
+                        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                          {/* AI Match Engine panel */}
+                          <AiMatchPanel
+                            reportId={r.id}
+                            reportType={r.report_type}
+                            autoRun={autoRunAi}
+                            onConfirmed={() => {
+                              fetchReport(r.id)
+                              onUnmatched()
+                            }}
+                          />
+
+                          {/* Divider */}
+                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.05)" }} />
+                            <span style={{ fontSize: 9, color: "#1f2937", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>or match manually</span>
+                            <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.05)" }} />
+                          </div>
+
+                          {/* Manual match button */}
+                          <motion.button whileHover={{ x: 2 }} whileTap={{ scale: 0.98 }}
+                            onClick={() => onOpenMatcher()}
+                            style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(99,102,241,0.22)", background: "rgba(99,102,241,0.05)", cursor: "pointer", fontFamily: "'DM Sans',sans-serif", width: "100%" }}>
+                            <Link2 size={13} color="#6366f1" />
+                            <span style={{ fontSize: 12, fontWeight: 600, color: "#818cf8", flex: 1, textAlign: "left" }}>
+                              Match with {r.report_type === "lost" ? "a Found" : "a Lost"} Report
+                            </span>
+                          </motion.button>
+                        </div>
                       )}
                     </div>
 
@@ -937,14 +1321,20 @@ function MatchedPairCard({
 // ─────────────────────────────────────────────────────────────────────────────
 //  TABLE ROW (desktop)
 // ─────────────────────────────────────────────────────────────────────────────
-function ReportRow({ report, onClick, index }: { report: AdminLostReportListItem; onClick: () => void; index: number }) {
+function ReportRow({ report, onClick, onAiMatch, index }: {
+  report: AdminLostReportListItem
+  onClick: () => void
+  onAiMatch: (e: React.MouseEvent) => void
+  index: number
+}) {
   const CatIcon = CATEGORY_ICONS[report.category] ?? Tag
+  const canAiMatch = !report.matched_report && (report.status === "open" || report.status === "under_review")
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.03 }}
       onClick={onClick}
       className="ar-row"
-      style={{ display: "grid", gridTemplateColumns: "36px 1fr 130px 120px 60px 60px", gap: 12, padding: "13px 20px", borderBottom: "1px solid rgba(255,255,255,0.04)", alignItems: "center", cursor: "pointer", transition: "all 0.15s" }}>
+      style={{ display: "grid", gridTemplateColumns: "36px 1fr 130px 110px 50px 50px 96px", gap: 12, padding: "13px 20px", borderBottom: "1px solid rgba(255,255,255,0.04)", alignItems: "center", cursor: "pointer", transition: "all 0.15s" }}>
       <div style={{ width: 32, height: 32, borderRadius: 9, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
         <CatIcon size={13} color="#4b5563" />
       </div>
@@ -986,6 +1376,27 @@ function ReportRow({ report, onClick, index }: { report: AdminLostReportListItem
         <Eye size={10} color="#374151" />{report.views}
       </span>
       <span style={{ fontSize: 10, color: "#374151" }}>{timeAgo(report.date_reported)}</span>
+      {/* AI Match quick-action — stop row click from firing */}
+      <div onClick={e => e.stopPropagation()} style={{ display: "flex", justifyContent: "flex-end" }}>
+        {canAiMatch ? (
+          <motion.button
+            whileHover={{ scale: 1.06, boxShadow: "0 0 14px rgba(99,102,241,0.5)" }}
+            whileTap={{ scale: 0.94 }}
+            onClick={onAiMatch}
+            style={{
+              display: "flex", alignItems: "center", gap: 5,
+              padding: "5px 10px", borderRadius: 7, border: "none",
+              background: "linear-gradient(135deg,#6366f1,#8b5cf6)",
+              fontSize: 10, fontWeight: 700, color: "#fff",
+              cursor: "pointer", fontFamily: "'DM Sans',sans-serif",
+              whiteSpace: "nowrap", letterSpacing: 0.3,
+            }}>
+            <Brain size={10} />AI Match
+          </motion.button>
+        ) : (
+          <span style={{ fontSize: 10, color: "#1f2937" }}>—</span>
+        )}
+      </div>
     </motion.div>
   )
 }
@@ -993,8 +1404,14 @@ function ReportRow({ report, onClick, index }: { report: AdminLostReportListItem
 // ─────────────────────────────────────────────────────────────────────────────
 //  REPORT CARD (mobile)
 // ─────────────────────────────────────────────────────────────────────────────
-function ReportCard({ report, onClick, index }: { report: AdminLostReportListItem; onClick: () => void; index: number }) {
+function ReportCard({ report, onClick, onAiMatch, index }: {
+  report: AdminLostReportListItem
+  onClick: () => void
+  onAiMatch: (e: React.MouseEvent) => void
+  index: number
+}) {
   const CatIcon = CATEGORY_ICONS[report.category] ?? Tag
+  const canAiMatch = !report.matched_report && (report.status === "open" || report.status === "under_review")
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.04 }}
@@ -1035,9 +1452,25 @@ function ReportCard({ report, onClick, index }: { report: AdminLostReportListIte
         <span style={{ fontSize: 11, color: "#374151", display: "flex", alignItems: "center", gap: 3 }}>
           <MapPin size={9} />{report.location.length > 28 ? report.location.slice(0, 28) + "…" : report.location}
         </span>
-        <span style={{ fontSize: 11, color: "#374151", marginLeft: "auto", display: "flex", alignItems: "center", gap: 3 }}>
+        <span style={{ fontSize: 11, color: "#374151", display: "flex", alignItems: "center", gap: 3 }}>
           <Eye size={9} />{report.views}
         </span>
+        {canAiMatch && (
+          <div onClick={e => e.stopPropagation()} style={{ marginLeft: "auto" }}>
+            <motion.button
+              whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+              onClick={onAiMatch}
+              style={{
+                display: "flex", alignItems: "center", gap: 5,
+                padding: "5px 10px", borderRadius: 7, border: "none",
+                background: "linear-gradient(135deg,#6366f1,#8b5cf6)",
+                fontSize: 10, fontWeight: 700, color: "#fff",
+                cursor: "pointer", fontFamily: "'DM Sans',sans-serif",
+              }}>
+              <Brain size={10} />AI Match
+            </motion.button>
+          </div>
+        )}
       </div>
     </motion.div>
   )
@@ -1065,6 +1498,7 @@ export default function AllReports() {
   const [deleteTarget,   setDeleteTarget]   = useState<{ id: number; name: string } | null>(null)
   const [showFilters,    setShowFilters]    = useState(false)
   const [showMatcher,   setShowMatcher]   = useState(false)
+  const [autoRunAiId,   setAutoRunAiId]   = useState<number | null>(null)
 
   const activeFilterCount = (statusFilter !== "all" ? 1 : 0) + (typeFilter !== "all" ? 1 : 0) + (categoryFilter !== "all" ? 1 : 0) + (urgentFilter ? 1 : 0)
 
@@ -1119,18 +1553,17 @@ export default function AllReports() {
           </div>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}
-            onClick={() => setShowMatcher(true)}
-            style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 16px", borderRadius: 10, border: "1px solid rgba(99,102,241,0.35)", background: "rgba(99,102,241,0.1)", fontSize: 13, fontWeight: 600, color: "#a5b4fc", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
-            <Link2 size={13} />{!isMobile && "Match Reports"}
-          </motion.button>
           {!isMobile && (
             <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}
               style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 16px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.55)", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
               <Download size={13} />Export
             </motion.button>
           )}
-          
+          <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}
+            onClick={() => setShowMatcher(true)}
+            style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 16px", borderRadius: 10, border: "1px solid rgba(99,102,241,0.35)", background: "rgba(99,102,241,0.1)", fontSize: 13, fontWeight: 600, color: "#a5b4fc", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
+            <Link2 size={13} />{!isMobile && "Match Reports"}
+          </motion.button>
           <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}
             onClick={() => { fetchReports({ ordering }); fetchStats() }}
             disabled={loadingList}
@@ -1328,18 +1761,18 @@ export default function AllReports() {
       ) : isMobile ? (
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {reports.map((r, i) => (
-            <ReportCard key={r.id} report={r} index={i} onClick={() => setOpenId(r.id)} />
+            <ReportCard key={r.id} report={r} index={i} onClick={() => setOpenId(r.id)} onAiMatch={e => { e.stopPropagation(); setOpenId(r.id); setAutoRunAiId(r.id) }} />
           ))}
         </div>
       ) : (
         <div style={{ borderRadius: 16, border: "1px solid rgba(255,255,255,0.07)", background: "rgba(255,255,255,0.01)", overflow: "hidden" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "36px 1fr 130px 120px 60px 60px", gap: 12, padding: "10px 20px", borderBottom: "1px solid rgba(255,255,255,0.07)", background: "rgba(255,255,255,0.02)" }}>
-            {["", "Item", "Status", "Reporter", "Views", "Date"].map((h, i) => (
+          <div style={{ display: "grid", gridTemplateColumns: "36px 1fr 130px 110px 50px 50px 96px", gap: 12, padding: "10px 20px", borderBottom: "1px solid rgba(255,255,255,0.07)", background: "rgba(255,255,255,0.02)" }}>
+            {["", "Item", "Status", "Reporter", "Views", "Date", ""].map((h, i) => (
               <div key={i} style={{ fontSize: 10, fontWeight: 700, color: "#374151", textTransform: "uppercase", letterSpacing: 1 }}>{h}</div>
             ))}
           </div>
           {reports.map((r, i) => (
-            <ReportRow key={r.id} report={r} index={i} onClick={() => setOpenId(r.id)} />
+            <ReportRow key={r.id} report={r} index={i} onClick={() => setOpenId(r.id)} onAiMatch={e => { e.stopPropagation(); setOpenId(r.id); setAutoRunAiId(r.id) }} />
           ))}
         </div>
       )}
@@ -1363,7 +1796,8 @@ export default function AllReports() {
       {/* Review drawer */}
       <ReviewDrawer
         reportId={openId}
-        onClose={() => setOpenId(null)}
+        autoRunAi={autoRunAiId !== null && autoRunAiId === openId}
+        onClose={() => { setOpenId(null); setAutoRunAiId(null) }}
         isMobile={isMobile}
         onDeleteRequest={(id, name) => setDeleteTarget({ id, name })}
         onUnmatched={() => { fetchReports({ ordering }); fetchStats() }}
