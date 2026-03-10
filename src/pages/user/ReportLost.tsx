@@ -533,7 +533,7 @@ function SuccessScreen({ onNew, isMobile }: { onNew: () => void; isMobile: boole
       <motion.div
         initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.34 }}
         style={{ display: "flex", flexDirection: isMobile ? "column" : "row", gap: 10, width: isMobile ? "100%" : "auto", alignItems: "center" }}>
-        <a href="/user-reports"
+        <a href="/user-my-reports"
           style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "11px 20px", borderRadius: 12, background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.28)", fontSize: 13, fontWeight: 600, color: "#a5b4fc", textDecoration: "none", cursor: "pointer", width: isMobile ? "100%" : "auto" }}>
           <Eye size={14} />View My Reports
         </a>
