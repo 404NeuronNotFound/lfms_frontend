@@ -43,25 +43,30 @@ function ReportPicker({ type, selected, onSelect }: PickerProps) {
   const [reports, setReports] = useState<AdminReportListItem[]>([])
   const [loading, setLoading] = useState(false)
   const [search,  setSearch]  = useState("")
+  const [searched, setSearched] = useState(false)
 
   const color  = type === "lost" ? "#818cf8" : "#34d399"
   const border = type === "lost" ? "rgba(99,102,241,0.3)" : "rgba(16,185,129,0.3)"
   const bg     = type === "lost" ? "rgba(99,102,241,0.08)" : "rgba(16,185,129,0.08)"
   const label  = type === "lost" ? "Lost Report" : "Found Report"
 
+  // Only fetch when user types something
   useEffect(() => {
-    setLoading(true)
-    adminGetReportsByType(type, "open")
-      .then(r => setReports(r.results))
-      .catch(() => {})
-      .finally(() => setLoading(false))
-  }, [type])
-
-  const filtered = reports.filter(r =>
-    r.item_name.toLowerCase().includes(search.toLowerCase()) ||
-    r.location.toLowerCase().includes(search.toLowerCase()) ||
-    r.category.toLowerCase().includes(search.toLowerCase())
-  )
+    if (!search.trim()) {
+      setReports([])
+      setSearched(false)
+      return
+    }
+    const t = setTimeout(() => {
+      setLoading(true)
+      setSearched(true)
+      adminGetReportsByType(type, "open", search.trim())
+        .then(r => setReports(r.results))
+        .catch(() => setReports([]))
+        .finally(() => setLoading(false))
+    }, 350)
+    return () => clearTimeout(t)
+  }, [type, search])
 
   return (
     <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 10 }}>
@@ -80,7 +85,7 @@ function ReportPicker({ type, selected, onSelect }: PickerProps) {
           <div style={{ fontSize: 12, fontWeight: 700, color: "#fff", marginBottom: 3 }}>{selected.item_name}</div>
           <div style={{ fontSize: 10, color: "#6b7280" }}>{selected.category} · {selected.location}</div>
           <div style={{ fontSize: 9, color, marginTop: 3 }}>#{selected.id} · {timeAgo(selected.date_reported)}</div>
-          <button onClick={() => onSelect(null as any)}
+          <button onClick={() => { onSelect(null as any); setSearch("") }}
             style={{ position: "absolute", top: 8, right: 8, background: "none", border: "none", cursor: "pointer", padding: 2 }}>
             <X size={11} color="#4b5563" />
           </button>
@@ -93,55 +98,72 @@ function ReportPicker({ type, selected, onSelect }: PickerProps) {
         <input
           value={search}
           onChange={e => setSearch(e.target.value)}
-          placeholder={`Search ${type} reports…`}
-          style={{ width: "100%", boxSizing: "border-box", background: "#0c0c18", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8, padding: "7px 10px 7px 28px", fontSize: 12, color: "#fff", outline: "none", fontFamily: "'DM Sans',sans-serif" }}
+          placeholder={`Type to search ${type} reports…`}
+          style={{ width: "100%", boxSizing: "border-box", background: "#0c0c18", border: `1px solid ${search ? border : "rgba(255,255,255,0.08)"}`, borderRadius: 8, padding: "7px 10px 7px 28px", fontSize: 12, color: "#fff", outline: "none", fontFamily: "'DM Sans',sans-serif", transition: "border-color 0.2s" }}
         />
+        {search && (
+          <button onClick={() => setSearch("")}
+            style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 2 }}>
+            <X size={10} color="#4b5563" />
+          </button>
+        )}
       </div>
 
-      {/* List */}
-      <div style={{ maxHeight: 240, overflowY: "auto", display: "flex", flexDirection: "column", gap: 5 }}>
-        {loading ? (
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "24px 0", gap: 8 }}>
-            <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}>
-              <RefreshCw size={14} color="#4b5563" />
-            </motion.div>
-            <span style={{ fontSize: 12, color: "#374151" }}>Loading…</span>
+      {/* List — only visible after user has typed */}
+      <div style={{ minHeight: 48 }}>
+        {!search.trim() ? (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "16px 0", gap: 8 }}>
+            <Search size={12} color="#1f2937" />
+            <span style={{ fontSize: 11, color: "#1f2937" }}>Search to find {type} reports</span>
           </div>
-        ) : filtered.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "20px 0", fontSize: 12, color: "#374151" }}>
-            No {type} reports available
+        ) : loading ? (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "16px 0", gap: 8 }}>
+            <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}>
+              <RefreshCw size={13} color="#4b5563" />
+            </motion.div>
+            <span style={{ fontSize: 12, color: "#374151" }}>Searching…</span>
+          </div>
+        ) : searched && reports.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "16px 0", fontSize: 12, color: "#374151" }}>
+            No {type} reports found
           </div>
         ) : (
-          filtered.map(r => {
-            const CatIcon = CAT_ICONS[r.category] ?? Tag
-            const isSelected = selected?.id === r.id
-            return (
-              <motion.button key={r.id} whileTap={{ scale: 0.98 }}
-                onClick={() => onSelect(r)}
-                style={{
-                  display: "flex", alignItems: "flex-start", gap: 10, padding: "10px 12px", borderRadius: 9, width: "100%", textAlign: "left", cursor: "pointer", fontFamily: "'DM Sans',sans-serif",
-                  background: isSelected ? bg : "rgba(255,255,255,0.02)",
-                  border: `1px solid ${isSelected ? border : "rgba(255,255,255,0.06)"}`,
-                  transition: "all 0.15s",
-                }}>
-                <CatIcon size={13} color={isSelected ? color : "#4b5563"} style={{ marginTop: 2, flexShrink: 0 }} />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: isSelected ? "#fff" : "#c4c9e2", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: 2 }}>
-                    {r.item_name}
-                  </div>
-                  <div style={{ fontSize: 10, color: "#4b5563", display: "flex", gap: 6, flexWrap: "wrap" }}>
-                    <span style={{ display: "flex", alignItems: "center", gap: 3 }}>
-                      <MapPin size={8} />{r.location}
-                    </span>
-                    <span style={{ display: "flex", alignItems: "center", gap: 3 }}>
-                      <Calendar size={8} />{timeAgo(r.date_reported)}
-                    </span>
-                  </div>
-                </div>
-                {isSelected && <CheckCircle size={13} color={color} style={{ flexShrink: 0, marginTop: 2 }} />}
-              </motion.button>
-            )
-          })
+          <div style={{ maxHeight: 200, overflowY: "auto", display: "flex", flexDirection: "column", gap: 5 }}>
+            <AnimatePresence>
+              {reports.map((r, idx) => {
+                const CatIcon = CAT_ICONS[r.category] ?? Tag
+                const isSelected = selected?.id === r.id
+                return (
+                  <motion.button key={r.id}
+                    initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.03 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => onSelect(r)}
+                    style={{
+                      display: "flex", alignItems: "flex-start", gap: 10, padding: "10px 12px", borderRadius: 9, width: "100%", textAlign: "left", cursor: "pointer", fontFamily: "'DM Sans',sans-serif",
+                      background: isSelected ? bg : "rgba(255,255,255,0.02)",
+                      border: `1px solid ${isSelected ? border : "rgba(255,255,255,0.06)"}`,
+                      transition: "all 0.15s",
+                    }}>
+                    <CatIcon size={13} color={isSelected ? color : "#4b5563"} style={{ marginTop: 2, flexShrink: 0 }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: isSelected ? "#fff" : "#c4c9e2", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: 2 }}>
+                        {r.item_name}
+                      </div>
+                      <div style={{ fontSize: 10, color: "#4b5563", display: "flex", gap: 6, flexWrap: "wrap" }}>
+                        <span style={{ display: "flex", alignItems: "center", gap: 3 }}>
+                          <MapPin size={8} />{r.location}
+                        </span>
+                        <span style={{ display: "flex", alignItems: "center", gap: 3 }}>
+                          <Calendar size={8} />{timeAgo(r.date_reported)}
+                        </span>
+                      </div>
+                    </div>
+                    {isSelected && <CheckCircle size={13} color={color} style={{ flexShrink: 0, marginTop: 2 }} />}
+                  </motion.button>
+                )
+              })}
+            </AnimatePresence>
+          </div>
         )}
       </div>
     </div>

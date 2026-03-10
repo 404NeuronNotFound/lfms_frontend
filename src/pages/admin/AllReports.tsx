@@ -698,6 +698,243 @@ function ReviewDrawer({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+//  MATCHED PAIRS VIEW
+// ─────────────────────────────────────────────────────────────────────────────
+function MatchedPairsView({
+  reports,
+  onOpen,
+  isMobile,
+}: {
+  reports: AdminLostReportListItem[]
+  onOpen: (id: number) => void
+  isMobile: boolean
+}) {
+  // Build pairs: for each matched report, find lost + found counterparts
+  const pairs: Array<{ lost: AdminLostReportListItem; found: AdminLostReportListItem }> = []
+  const seen = new Set<number>()
+
+  for (const r of reports) {
+    if (seen.has(r.id)) continue
+    if (r.matched_report === null) continue
+    const partner = reports.find(p => p.id === r.matched_report)
+    if (!partner) continue
+    seen.add(r.id)
+    seen.add(partner.id)
+    const lost  = r.report_type === "lost"  ? r : partner
+    const found = r.report_type === "found" ? r : partner
+    pairs.push({ lost, found })
+  }
+
+  // Any matched reports whose partner isn't in the current list (filtered out)
+  const orphans = reports.filter(r => !seen.has(r.id))
+
+  if (pairs.length === 0 && orphans.length === 0) {
+    return (
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+        style={{ textAlign: "center", padding: "56px 24px", borderRadius: 16, border: "1px solid rgba(255,255,255,0.07)", background: "rgba(255,255,255,0.01)" }}>
+        <Link2 size={28} color="#374151" style={{ marginBottom: 14 }} />
+        <div style={{ fontSize: 15, fontWeight: 700, color: "#374151", fontFamily: "'Syne',sans-serif", marginBottom: 6 }}>No matched pairs</div>
+        <div style={{ fontSize: 12, color: "#374151" }}>Match reports using the Match Reports button above.</div>
+      </motion.div>
+    )
+  }
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: isMobile ? 14 : 18 }}>
+      {pairs.map(({ lost, found }, idx) => (
+        <MatchedPairCard key={`${lost.id}-${found.id}`} lost={lost} found={found} onOpen={onOpen} index={idx} isMobile={isMobile} />
+      ))}
+      {orphans.length > 0 && (
+        <div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: "#374151", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 10, paddingLeft: 4 }}>
+            Matched — Partner Not in Current Filter
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {orphans.map((r, i) => (
+              <motion.div key={r.id}
+                initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
+                onClick={() => onOpen(r.id)}
+                style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderRadius: 12, border: "1px solid rgba(255,255,255,0.07)", background: "rgba(255,255,255,0.01)", cursor: "pointer" }}>
+                <StatusPill status={r.status} />
+                <span style={{ fontSize: 13, fontWeight: 600, color: "#c4c9e2", flex: 1 }}>{r.item_name}</span>
+                <span style={{ fontSize: 10, color: "#374151" }}>#{r.id}</span>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function MatchedPairCard({
+  lost, found, onOpen, index, isMobile,
+}: {
+  lost: AdminLostReportListItem
+  found: AdminLostReportListItem
+  onOpen: (id: number) => void
+  index: number
+  isMobile: boolean
+}) {
+  const LostIcon  = CATEGORY_ICONS[lost.category]  ?? Tag
+  const FoundIcon = CATEGORY_ICONS[found.category] ?? Tag
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05 }}
+      style={{
+        borderRadius: 16,
+        border: "1px solid rgba(129,140,248,0.2)",
+        background: "linear-gradient(135deg,rgba(99,102,241,0.04),rgba(16,185,129,0.03))",
+        overflow: "hidden",
+        position: "relative",
+      }}
+    >
+      {/* Matched label */}
+      <div style={{
+        padding: "8px 16px",
+        borderBottom: "1px solid rgba(255,255,255,0.05)",
+        display: "flex", alignItems: "center", gap: 8,
+        background: "rgba(129,140,248,0.05)",
+      }}>
+        <Link2 size={10} color="#6366f1" />
+        <span style={{ fontSize: 9, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: 1.2 }}>
+          Matched Pair #{index + 1}
+        </span>
+        <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 6 }}>
+          <StatusPill status={lost.status} />
+        </div>
+      </div>
+
+      {/* Two report cards */}
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: isMobile ? "1fr" : "1fr auto 1fr",
+        gap: 0,
+      }}>
+        {/* Lost report */}
+        <motion.div
+          whileHover={{ background: "rgba(99,102,241,0.07)" }}
+          onClick={() => onOpen(lost.id)}
+          style={{
+            padding: "16px 18px", cursor: "pointer",
+            borderRight: isMobile ? "none" : "1px solid rgba(255,255,255,0.05)",
+            borderBottom: isMobile ? "1px solid rgba(255,255,255,0.05)" : "none",
+            transition: "background 0.15s",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+            <div style={{
+              width: 38, height: 38, borderRadius: 11, flexShrink: 0,
+              background: "rgba(99,102,241,0.12)",
+              border: "1px solid rgba(99,102,241,0.25)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <LostIcon size={15} color="#818cf8" />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                <span style={{ fontSize: 9, fontWeight: 700, color: "#818cf8", background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.25)", padding: "2px 7px", borderRadius: 20, letterSpacing: 0.5 }}>
+                  LOST
+                </span>
+                {lost.is_urgent && <Zap size={9} color="#f87171" />}
+                <span style={{ fontSize: 9, color: "#374151", marginLeft: "auto" }}>#{lost.id}</span>
+              </div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#e2e8f0", fontFamily: "'Syne',sans-serif", letterSpacing: "-0.2px", marginBottom: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {lost.item_name}
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                <div style={{ fontSize: 11, color: "#4b5563", display: "flex", alignItems: "center", gap: 4 }}>
+                  <User size={9} color="#374151" />
+                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {lost.user_info.name} · @{lost.user_info.username}
+                  </span>
+                </div>
+                <div style={{ fontSize: 11, color: "#374151", display: "flex", alignItems: "center", gap: 4 }}>
+                  <MapPin size={9} color="#374151" />
+                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {lost.location}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Connector */}
+        {isMobile ? (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "6px 0", gap: 8 }}>
+            <div style={{ flex: 1, height: 1, background: "linear-gradient(90deg,transparent,rgba(99,102,241,0.3))" }} />
+            <div style={{ width: 26, height: 26, borderRadius: "50%", background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.3)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <Link2 size={11} color="#818cf8" />
+            </div>
+            <div style={{ flex: 1, height: 1, background: "linear-gradient(90deg,rgba(16,185,129,0.3),transparent)" }} />
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "0 12px", gap: 6 }}>
+            <div style={{ width: 1, flex: 1, background: "linear-gradient(180deg,transparent,rgba(99,102,241,0.3))" }} />
+            <div style={{ width: 30, height: 30, borderRadius: "50%", background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.3)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <Link2 size={13} color="#818cf8" />
+            </div>
+            <div style={{ width: 1, flex: 1, background: "linear-gradient(180deg,rgba(16,185,129,0.3),transparent)" }} />
+          </div>
+        )}
+
+        {/* Found report */}
+        <motion.div
+          whileHover={{ background: "rgba(16,185,129,0.07)" }}
+          onClick={() => onOpen(found.id)}
+          style={{
+            padding: "16px 18px", cursor: "pointer",
+            borderLeft: isMobile ? "none" : "1px solid rgba(255,255,255,0.05)",
+            transition: "background 0.15s",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+            <div style={{
+              width: 38, height: 38, borderRadius: 11, flexShrink: 0,
+              background: "rgba(16,185,129,0.12)",
+              border: "1px solid rgba(16,185,129,0.25)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <FoundIcon size={15} color="#34d399" />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                <span style={{ fontSize: 9, fontWeight: 700, color: "#34d399", background: "rgba(16,185,129,0.12)", border: "1px solid rgba(16,185,129,0.25)", padding: "2px 7px", borderRadius: 20, letterSpacing: 0.5 }}>
+                  FOUND
+                </span>
+                {found.is_urgent && <Zap size={9} color="#f87171" />}
+                <span style={{ fontSize: 9, color: "#374151", marginLeft: "auto" }}>#{found.id}</span>
+              </div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#e2e8f0", fontFamily: "'Syne',sans-serif", letterSpacing: "-0.2px", marginBottom: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {found.item_name}
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                <div style={{ fontSize: 11, color: "#4b5563", display: "flex", alignItems: "center", gap: 4 }}>
+                  <User size={9} color="#374151" />
+                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {found.user_info.name} · @{found.user_info.username}
+                  </span>
+                </div>
+                <div style={{ fontSize: 11, color: "#374151", display: "flex", alignItems: "center", gap: 4 }}>
+                  <MapPin size={9} color="#374151" />
+                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {found.location}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </motion.div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 //  TABLE ROW (desktop)
 // ─────────────────────────────────────────────────────────────────────────────
 function ReportRow({ report, onClick, index }: { report: AdminLostReportListItem; onClick: () => void; index: number }) {
@@ -893,6 +1130,7 @@ export default function AllReports() {
               <Download size={13} />Export
             </motion.button>
           )}
+          
           <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}
             onClick={() => { fetchReports({ ordering }); fetchStats() }}
             disabled={loadingList}
@@ -1085,6 +1323,8 @@ export default function AllReports() {
           <div style={{ fontSize: 15, fontWeight: 700, color: "#374151", fontFamily: "'Syne',sans-serif", marginBottom: 6 }}>No reports found</div>
           <div style={{ fontSize: 12, color: "#374151" }}>Try adjusting your filters or search terms.</div>
         </motion.div>
+      ) : statusFilter === "matched" ? (
+        <MatchedPairsView reports={reports} onOpen={id => setOpenId(id)} isMobile={isMobile} />
       ) : isMobile ? (
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {reports.map((r, i) => (

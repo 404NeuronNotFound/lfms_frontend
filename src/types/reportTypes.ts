@@ -138,7 +138,8 @@ export interface AdminReport extends Omit<Report, "user_info"> {
 }
 
 export interface AdminReportListItem extends Omit<ReportListItem, "user_info"> {
-  user_info: AdminReportUserInfo
+  user_info:      AdminReportUserInfo
+  matched_report: number | null
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

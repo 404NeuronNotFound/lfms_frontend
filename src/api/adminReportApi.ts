@@ -7,7 +7,6 @@ import type {
   AdminUpdateReportResponse,
   ReportStatus,
   ReportCategory,
-  AdminLostReportListItem,
 } from "@/types/reportTypes"
 
 const BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000/api"
@@ -140,9 +139,11 @@ export async function adminUnmatch(
 export async function adminGetReportsByType(
   type:    "lost" | "found",
   status?: string,
+  search?: string,
 ): Promise<{ count: number; results: AdminLostReportListItem[] }> {
   const params = new URLSearchParams({ type })
   if (status) params.set("status", status)
+  if (search) params.set("search", search)
   const res = await authFetch(`${BASE}/admin/reports/?${params}`)
   return handleResponse(res)
 }
