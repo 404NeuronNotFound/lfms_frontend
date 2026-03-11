@@ -546,17 +546,13 @@ function SuccessScreen({ onNew, isMobile }: { onNew: () => void; isMobile: boole
   )
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// MAIN PAGE
-// ─────────────────────────────────────────────────────────────────────────────
+
 export default function ReportLost() {
-  // ── Store ──────────────────────────────────────────────────────────────────
+
   const { submitting, submitError, submitSuccess, submitReport, resetSubmit } = useReportStore()
 
-  // ── Responsive ────────────────────────────────────────────────────────────
   const isMobile = useIsMobile(600)
 
-  // ── Local UI state ─────────────────────────────────────────────────────────
   const [step,   setStep]   = useState(1)
   const [data,   setData]   = useState<FormData>(INITIAL)
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({})
