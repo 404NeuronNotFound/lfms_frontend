@@ -39,6 +39,7 @@ export type MatchSuggestionStatus = "pending" | "confirmed" | "dismissed"
 export type ClaimStatus = "pending" | "approved" | "rejected"
 
 export type NotificationType =
+  // user-facing
   | "report_received"
   | "under_review"
   | "matched"
@@ -47,6 +48,9 @@ export type NotificationType =
   | "claim_rejected"
   | "report_closed"
   | "report_rejected"
+  // admin-facing
+  | "new_report"
+  | "new_claim"
 
 // ── Image row returned by the server ─────────────────────────────────────────
 export interface ReportImage {

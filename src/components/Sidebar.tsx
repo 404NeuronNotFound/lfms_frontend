@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useAuthStore } from "@/store/authStore"
 import { useSettingsStore } from "@/store/settingsStore"
+import { useNotificationStore } from "@/store/notificationStore"
 import {
   Search, LayoutDashboard, PackageSearch, PackagePlus, Bell,
   ClipboardList, Users, BarChart3, Settings, ShieldCheck, LogOut,
@@ -17,33 +18,30 @@ const ADMIN_NAV = [
   {
     group: "Overview",
     items: [
-      { icon: LayoutDashboard, label: "Dashboard",   href: "/admin-dashboard", badge: null },
-      { icon: BarChart3,       label: "Analytics",   href: "/admin-analytics", badge: null },
+      { icon: LayoutDashboard, label: "Dashboard",  href: "/admin-dashboard",  badgeKey: null },
+      { icon: Bell,            label: "Notifications", href: "/admin-notifications", badgeKey: "unread" },
+      { icon: BarChart3,       label: "Analytics",  href: "/admin-analytics",  badgeKey: null },
     ],
   },
   {
     group: "Management",
     items: [
-      { icon: ClipboardList,  label: "All Reports",  href: "/admin-all-reports", badge: null },
-      // { icon: PackageSearch,  label: "Lost Items",   href: "/admin-lost",        badge: null },
-      // { icon: Tag,            label: "Found Items",  href: "/admin-found",       badge: null },
-      // { icon: CheckCircle,    label: "Claimed",      href: "/admin-claimed",     badge: null },
-      { icon: ShieldCheck,    label: "Claims",       href: "/admin-claims", badge: null }
+      { icon: ClipboardList, label: "All Reports", href: "/admin-all-reports", badgeKey: null        },
+      { icon: ShieldCheck,   label: "Claims",      href: "/admin-claims",      badgeKey: "newClaims" },
     ],
   },
   {
     group: "Users",
     items: [
-      { icon: Users,          label: "All Users",    href: "/admin-all-users",   badge: null },
-      // { icon: ShieldCheck,    label: "Verifications",href: "/admin-verify",      badge: null },
-      { icon: MessageSquare,  label: "Messages",     href: "/admin-messages",    badge: null },
+      { icon: Users,         label: "All Users", href: "/admin-all-users", badgeKey: null },
+      { icon: MessageSquare, label: "Messages",  href: "/admin-messages",  badgeKey: null },
     ],
   },
   {
     group: "System",
     items: [
-      { icon: FileText,       label: "Audit Logs",   href: "/admin-logs",        badge: null },
-      { icon: Settings,       label: "Settings",     href: "/admin-settings",    badge: null },
+      { icon: FileText, label: "Audit Logs", href: "/admin-logs",     badgeKey: null },
+      { icon: Settings, label: "Settings",   href: "/admin-settings", badgeKey: null },
     ],
   },
 ]
@@ -52,39 +50,69 @@ const USER_NAV = [
   {
     group: "Home",
     items: [
-      { icon: LayoutDashboard, label: "Dashboard",     href: "/user-dashboard",     badge: null },
-      { icon: Bell,            label: "Notifications", href: "/user-notifications", badge: null },
+      { icon: LayoutDashboard, label: "Dashboard",     href: "/user-dashboard",     badgeKey: null     },
+      { icon: Bell,            label: "Notifications", href: "/user-notifications", badgeKey: "unread" },
     ],
   },
   {
     group: "Reports",
     items: [
-      { icon: PackagePlus,    label: "Report Lost",    href: "/user-report-lost",   badge: null },
-      { icon: PackageSearch,  label: "Report Found",   href: "/user-report-found",  badge: null },
-      { icon: ClipboardList,  label: "My Reports",     href: "/user-my-reports",    badge: null },
-      { icon: CheckCircle,    label: "My Claims",      href: "/user-my-claims",        badge: null },
+      { icon: PackagePlus,   label: "Report Lost",  href: "/user-report-lost",  badgeKey: null },
+      { icon: PackageSearch, label: "Report Found", href: "/user-report-found", badgeKey: null },
+      { icon: ClipboardList, label: "My Reports",   href: "/user-my-reports",   badgeKey: null },
+      { icon: CheckCircle,   label: "My Claims",    href: "/user-my-claims",    badgeKey: null },
     ],
   },
   {
     group: "Discover",
     items: [
-      { icon: Search,         label: "Browse Items",   href: "/user-browse-items",        badge: null },
+      { icon: Search, label: "Browse Items", href: "/user-browse-items", badgeKey: null },
     ],
   },
   {
     group: "Account",
     items: [
-      { icon: MessageSquare,  label: "Messages",       href: "/user-messages",      badge: null },
-      { icon: Settings,       label: "Settings",       href: "/user-settings",      badge: null },
+      { icon: MessageSquare, label: "Messages", href: "/user-messages", badgeKey: null },
+      { icon: Settings,      label: "Settings", href: "/user-settings", badgeKey: null },
     ],
   },
 ]
 
-interface NavItem  { icon: React.ElementType; label: string; href: string; badge: string | null }
+interface NavItem  { icon: React.ElementType; label: string; href: string; badgeKey: string | null }
 interface NavGroup { group: string; items: NavItem[] }
 interface SidebarProps { collapsed: boolean; setCollapsed: (v: boolean) => void }
 
-// ── Avatar renderer ───────────────────────────────────────────────────────
+// ── Badge pill / dot ──────────────────────────────────────────────────────
+function NavBadge({ count, collapsed }: { count: number; collapsed: boolean }) {
+  if (count <= 0) return null
+  const label = count > 99 ? "99+" : String(count)
+  if (collapsed) {
+    return (
+      <div style={{
+        position: "absolute", top: 5, right: 5,
+        minWidth: 16, height: 16, borderRadius: 8,
+        background: "linear-gradient(135deg,#6366f1,#8b5cf6)",
+        border: "2px solid #080814",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        fontSize: 8, fontWeight: 800, color: "#fff", padding: "0 3px",
+        boxShadow: "0 0 8px rgba(99,102,241,0.7)", lineHeight: 1,
+      }}>
+        {label}
+      </div>
+    )
+  }
+  return (
+    <span style={{
+      fontSize: 10, fontWeight: 800,
+      background: "linear-gradient(135deg,#6366f1,#8b5cf6)",
+      color: "#fff", padding: "2px 7px", borderRadius: 20, flexShrink: 0,
+      boxShadow: "0 2px 8px rgba(99,102,241,0.45)", lineHeight: 1.4,
+    }}>
+      {label}
+    </span>
+  )
+}
+
 function SidebarAvatar({ src, initials, size = 34 }: { src?: string | null; initials: string; size?: number }) {
   const style: React.CSSProperties = {
     width: size, height: size, borderRadius: "50%", flexShrink: 0,
@@ -113,6 +141,7 @@ function SidebarAvatar({ src, initials, size = 34 }: { src?: string | null; init
 export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
   const { user, role, logout } = useAuthStore()
   const { profile, fetchProfile } = useSettingsStore()
+  const { unreadCount, startPolling, stopPolling, notifications } = useNotificationStore()
 
   const [mobileOpen,      setMobileOpen]      = useState(false)
   const [activeHref,      setActiveHref]      = useState(
@@ -135,7 +164,22 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
 
   useEffect(() => { fetchProfile() }, [])
 
-  const isAdmin    = role === "ADMIN"
+  // Start polling notifications — 30 s interval, stop on unmount
+  useEffect(() => {
+    startPolling(30_000)
+    return () => stopPolling()
+  }, [])
+
+  const isAdmin = role === "ADMIN"
+
+  // Badge counts
+  const newClaimsCount = isAdmin
+    ? notifications.filter(n => n.type === "new_claim" && !n.is_read).length
+    : 0
+  const badgeValues: Record<string, number> = {
+    unread:    unreadCount,
+    newClaims: newClaimsCount,
+  }
   const navGroups: NavGroup[] = isAdmin ? ADMIN_NAV : USER_NAV
 
   const displayName = profile
@@ -150,6 +194,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
   const settingsHref = isAdmin ? "/admin-settings" : "/user-settings"
 
   function handleLogout() {
+    stopPolling()
     setShowLogoutModal(false)
     setShowProfileCard(false)
     logout()
@@ -312,14 +357,16 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                   onMouseLeave={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.borderColor = "transparent" } }}
                 >
                   {isActive && !collapsed && <div style={{ position: "absolute", left: 0, top: "20%", bottom: "20%", width: 3, borderRadius: 2, background: "linear-gradient(180deg,#6366f1,#8b5cf6)" }} />}
-                  <item.icon size={17} color={isActive ? "#818cf8" : "rgba(255,255,255,0.45)"} style={{ flexShrink: 0 }} />
+                  <div style={{ position: "relative", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <item.icon size={17} color={isActive ? "#818cf8" : "rgba(255,255,255,0.45)"} />
+                    {collapsed && <NavBadge count={item.badgeKey ? (badgeValues[item.badgeKey] ?? 0) : 0} collapsed={true} />}
+                  </div>
                   {!collapsed && (
                     <>
                       <span style={{ flex: 1, fontSize: 13, fontWeight: isActive ? 600 : 400, color: isActive ? "#e0e7ff" : "rgba(255,255,255,0.6)", whiteSpace: "nowrap" }}>{item.label}</span>
-                      {item.badge && <span style={{ fontSize: 10, fontWeight: 700, background: isActive ? "#6366f1" : "rgba(255,255,255,0.08)", color: isActive ? "white" : "rgba(255,255,255,0.5)", padding: "2px 7px", borderRadius: 20, flexShrink: 0 }}>{item.badge}</span>}
+                      <NavBadge count={item.badgeKey ? (badgeValues[item.badgeKey] ?? 0) : 0} collapsed={false} />
                     </>
                   )}
-                  {collapsed && item.badge && <div style={{ position: "absolute", top: 6, right: 6, width: 6, height: 6, borderRadius: "50%", background: "#6366f1", boxShadow: "0 0 6px #6366f1" }} />}
                 </motion.a>
               )
             })}
@@ -400,7 +447,14 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
       {isMobile && (
         <button onClick={() => setMobileOpen(true)}
           style={{ position: "fixed", top: 16, left: 16, zIndex: 60, width: 40, height: 40, borderRadius: 10, background: "rgba(6,6,15,0.9)", backdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "white" }}>
-          <Menu size={18} />
+          <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <Menu size={18} />
+            {unreadCount > 0 && (
+              <div style={{ position: "absolute", top: -8, right: -8, minWidth: 16, height: 16, borderRadius: 8, background: "linear-gradient(135deg,#6366f1,#8b5cf6)", border: "2px solid #06060f", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, fontWeight: 800, color: "#fff", padding: "0 3px", boxShadow: "0 0 8px rgba(99,102,241,0.6)" }}>
+                {unreadCount > 99 ? "99+" : unreadCount}
+              </div>
+            )}
+          </div>
         </button>
       )}
 
@@ -452,7 +506,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "#06060f", color: "white" }}>
       <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
-      <main style={{ flex: 1, marginLeft: isMobile ? 0 : (collapsed ? 64 : 240), transition: "margin-left 0.3s ease", padding: isMobile ? "72px 16px 24px" : "32px", minHeight: "100vh" }}>
+      <main style={{ flex: 1, marginLeft: isMobile ? 0 : (collapsed ? 64 : 240), transition: "margin-left 0.3s ease", padding: isMobile ? "72px 16px 32px" : "32px", minHeight: "100vh" }}>
         {children}
       </main>
     </div>
