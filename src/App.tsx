@@ -11,6 +11,7 @@ import AdminAllUser from "./pages/admin/AllUser"
 import AdminAllReports from "./pages/admin/AllReports"
 import AdminClaims from "./pages/admin/AdminClaims"
 import AdminNotifications from "./pages/Notifications"
+import AdminLogs from "./pages/admin/AuditLogs"
 
 import UserDashboard from "./pages/user/Dashboard"
 import UserLayout from "./layouts/UserLayout"
@@ -44,6 +45,8 @@ export default function App() {
             <Route path="/admin-all-reports" element={<AdminAllReports />} />
             <Route path="/admin-claims" element={<AdminClaims />} />
             <Route path="/admin-notifications" element={<AdminNotifications />} />
+            <Route path="/admin-audit-logs" element={<AdminLogs />} />
+
           </Route>
         </Route>
 
