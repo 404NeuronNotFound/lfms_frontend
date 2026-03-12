@@ -158,12 +158,12 @@ export default function UserDashboard() {
           {/* Actions */}
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}
-              onClick={() => navigate("/report-lost")}
+              onClick={() => navigate("/user-report-lost")}
               style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 16px", borderRadius: 10, border: "1px solid rgba(99,102,241,0.3)", background: "rgba(99,102,241,0.1)", fontSize: 13, fontWeight: 600, color: "#a5b4fc", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
               <Tag size={13} /> Report Lost
             </motion.button>
             <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}
-              onClick={() => navigate("/report-found")}
+              onClick={() => navigate("/user-report-found")}
               style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 16px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#10b981,#059669)", fontSize: 13, fontWeight: 600, color: "#fff", cursor: "pointer", fontFamily: "'DM Sans',sans-serif", boxShadow: "0 4px 14px rgba(16,185,129,0.3)" }}>
               <PackageSearch size={13} /> Report Found
             </motion.button>
@@ -467,9 +467,9 @@ export default function UserDashboard() {
             <div style={{ fontSize: 15, fontWeight: 700, fontFamily: "'Syne',sans-serif", marginBottom: 14 }}>Quick Actions</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {[
-                { icon: Tag,          label: "Report a Lost Item",  color: "#6366f1", href: "/report-lost"          },
-                { icon: PackageSearch,label: "Report Found Item",   color: "#10b981", href: "/report-found"         },
-                { icon: ClipboardList,label: "Browse Found Items",  color: "#8b5cf6", href: "/user-browse"          },
+                { icon: Tag,          label: "Report a Lost Item",  color: "#6366f1", href: "/user-report-lost"          },
+                { icon: PackageSearch,label: "Report Found Item",   color: "#10b981", href: "/user-report-found"         },
+                { icon: ClipboardList,label: "Browse Found Items",  color: "#8b5cf6", href: "/user-browse-items"          },
                 { icon: ShieldCheck,  label: "My Claims",           color: "#0ea5e9", href: "/user-my-claims"       },
                 { icon: Bell,         label: "Notifications",        color: "#f59e0b", href: "/user-notifications"   },
               ].map((a, i) => (
