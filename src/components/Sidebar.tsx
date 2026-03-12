@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useLocation }           from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import { useAuthStore } from "@/store/authStore"
 import { useSettingsStore } from "@/store/settingsStore"
@@ -19,8 +20,6 @@ const ADMIN_NAV = [
     group: "Overview",
     items: [
       { icon: LayoutDashboard, label: "Dashboard",  href: "/admin-dashboard",  badgeKey: null },
-      { icon: Bell,            label: "Notifications", href: "/admin-notifications", badgeKey: "unread" },
-      { icon: BarChart3,       label: "Analytics",  href: "/admin-analytics",  badgeKey: null },
     ],
   },
   {
@@ -34,7 +33,6 @@ const ADMIN_NAV = [
     group: "Users",
     items: [
       { icon: Users,         label: "All Users", href: "/admin-all-users", badgeKey: null },
-      { icon: MessageSquare, label: "Messages",  href: "/admin-messages",  badgeKey: null },
     ],
   },
   {
@@ -72,7 +70,6 @@ const USER_NAV = [
   {
     group: "Account",
     items: [
-      { icon: MessageSquare, label: "Messages", href: "/user-messages", badgeKey: null },
       { icon: Settings,      label: "Settings", href: "/user-settings", badgeKey: null },
     ],
   },
@@ -144,9 +141,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
   const { unreadCount, startPolling, stopPolling, notifications } = useNotificationStore()
 
   const [mobileOpen,      setMobileOpen]      = useState(false)
-  const [activeHref,      setActiveHref]      = useState(
-    typeof window !== "undefined" ? window.location.pathname : ""
-  )
+  const { pathname: activeHref } = useLocation()
   const [isMobile,        setIsMobile]        = useState(false)
   const [showProfileCard, setShowProfileCard] = useState(false)
   const [showLogoutModal, setShowLogoutModal] = useState(false)
@@ -350,7 +345,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
               const isActive = activeHref === item.href
               return (
                 <motion.a key={ii} href={item.href} whileHover={{ x: collapsed ? 0 : 2 }}
-                  onClick={() => { setActiveHref(item.href); onNavigate?.() }}
+                  onClick={() => { onNavigate?.() }}
                   title={collapsed ? item.label : undefined}
                   style={{ display: "flex", alignItems: "center", gap: collapsed ? 0 : 10, justifyContent: collapsed ? "center" : "flex-start", padding: collapsed ? "10px" : "9px 10px", borderRadius: 10, marginBottom: 2, textDecoration: "none", position: "relative", background: isActive ? "linear-gradient(135deg,rgba(99,102,241,0.2),rgba(139,92,246,0.15))" : "transparent", border: isActive ? "1px solid rgba(99,102,241,0.3)" : "1px solid transparent", transition: "all 0.2s ease" }}
                   onMouseEnter={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)"; (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.07)" } }}
