@@ -40,7 +40,6 @@ function AvatarDisplay({
 const TABS = [
   { id: "profile",       label: "Profile",       icon: User   },
   { id: "security",      label: "Security",      icon: Shield },
-  { id: "notifications", label: "Notifications", icon: Bell   },
   { id: "danger",        label: "Danger Zone",   icon: Trash2 },
 ]
 
@@ -854,36 +853,6 @@ export default function SettingsPage() {
                       {!s.current && <button style={{ padding: "5px 12px", borderRadius: 8, border: "1px solid rgba(239,68,68,0.25)", background: "rgba(239,68,68,0.06)", fontSize: 12, color: "#f87171", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>Revoke</button>}
                     </div>
                   ))}
-                </SectionCard>
-              </div>
-            )}
-
-            {/* ══════════════ NOTIFICATIONS ══════════════ */}
-            {activeTab === "notifications" && (
-              <div>
-                <SectionCard title="Notification Channels" desc="Choose how Findify contacts you">
-                  <Toggle checked={notifs.notifications_email} onChange={v => setNotifs(n => ({ ...n, notifications_email: v }))} label="Email Notifications" desc="Get match alerts and updates to your inbox" />
-                  <Toggle checked={notifs.notifications_push}  onChange={v => setNotifs(n => ({ ...n, notifications_push: v }))}  label="Push Notifications"  desc="Browser and mobile push alerts" />
-                  <Toggle checked={notifs.notifications_sms}   onChange={v => setNotifs(n => ({ ...n, notifications_sms: v }))}   label="SMS Notifications"   desc="Text message alerts (requires phone number)" />
-                  <div style={{ display: "flex", justifyContent: "flex-end", paddingTop: 20 }}>
-                    <SaveButton loading={savingNotifs} label="Save Preferences" onClick={handleSaveNotifs} />
-                  </div>
-                </SectionCard>
-                <SectionCard title="Notification Events" desc="Pick which events trigger a notification">
-                  {(() => {
-                    const EVENTS = [
-                      { label: "New item match found",      desc: "When AI finds a potential match for your report",    def: true  },
-                      { label: "Item successfully claimed", desc: "When a claim is verified and approved",              def: true  },
-                      { label: "Report status updated",     desc: "When admin updates the status of your report",       def: true  },
-                      { label: "New message received",      desc: "When someone sends you a message on Findify",        def: true  },
-                      { label: "Weekly digest",             desc: "A weekly summary of activity on your reports",       def: false },
-                      { label: "System announcements",      desc: "Product updates and important notices from Findify", def: false },
-                    ]
-                    const [evts, setEvts] = useState(() => EVENTS.map(e => e.def))
-                    return EVENTS.map((item, i) => (
-                      <Toggle key={i} checked={evts[i]} onChange={v => setEvts(a => { const n=[...a]; n[i]=v; return n })} label={item.label} desc={item.desc} />
-                    ))
-                  })()}
                 </SectionCard>
               </div>
             )}
