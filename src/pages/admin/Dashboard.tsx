@@ -296,8 +296,8 @@ export default function AdminDashboard() {
                 : locs.map((loc: TopLocation, i: number) => (
                     <div key={i}>
                       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-                        <span style={{ fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.7)" }}>{loc.name}</span>
-                        <span style={{ fontSize: 11, color: "rgba(255,255,255,0.32)" }}>{loc.count} reports</span>
+                        <span style={{ fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.7)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "65%", display: "block" }}>{loc.name}</span>
+                        <span style={{ fontSize: 11, color: "rgba(255,255,255,0.32)", whiteSpace: "nowrap", flexShrink: 0 }}>{loc.count} reports</span>
                       </div>
                       <div style={{ height: 5, background: "rgba(255,255,255,0.06)", borderRadius: 3, overflow: "hidden" }}>
                         <motion.div
