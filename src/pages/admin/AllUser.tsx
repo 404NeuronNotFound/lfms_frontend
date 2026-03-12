@@ -7,9 +7,19 @@ import {
   SortAsc, SortDesc, TrendingUp, Activity, AlertTriangle,
   Loader2, ClipboardList,
 } from "lucide-react"
-
 import type { ApiUser, SortField, SortDir, RoleFilter, StatusFilter } from "@/types/userTypes"
 import { useUserStore } from "@/store/userStore"
+
+// ── Mobile hook ────────────────────────────────────────────────────────────
+function useIsMobile(bp = 768) {
+  const [v, setV] = useState(typeof window !== "undefined" ? window.innerWidth < bp : false)
+  useEffect(() => {
+    const h = () => setV(window.innerWidth < bp)
+    window.addEventListener("resize", h)
+    return () => window.removeEventListener("resize", h)
+  }, [bp])
+  return v
+}
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 function fmtLong(iso: string) {
@@ -42,18 +52,13 @@ function Avatar({ user, size = 36 }: { user: ApiUser; size?: number }) {
   if (user.profile?.avatar)
     return <img src={user.profile.avatar} alt={initials} style={{ width: size, height: size, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
   return (
-    <div style={{
-      width: size, height: size, borderRadius: "50%",
-      background: `linear-gradient(${GRADS[user.id % GRADS.length]})`,
-      display: "flex", alignItems: "center", justifyContent: "center",
-      fontSize: Math.round(size * 0.3), fontWeight: 700, color: "white", flexShrink: 0,
-    }}>
+    <div style={{ width: size, height: size, borderRadius: "50%", background: `linear-gradient(${GRADS[user.id % GRADS.length]})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: Math.round(size * 0.3), fontWeight: 700, color: "white", flexShrink: 0 }}>
       {initials}
     </div>
   )
 }
 
-// ── Status badge ───────────────────────────────────────────────────────────
+// ── Badges ─────────────────────────────────────────────────────────────────
 function StatusBadge({ status }: { status: string }) {
   const m: Record<string, { bg: string; border: string; color: string; dot: string; label: string }> = {
     active:   { bg: "rgba(52,211,153,0.1)",  border: "rgba(52,211,153,0.25)",  color: "#34d399", dot: "#34d399", label: "Active"   },
@@ -68,8 +73,6 @@ function StatusBadge({ status }: { status: string }) {
     </span>
   )
 }
-
-// ── Role badge ─────────────────────────────────────────────────────────────
 function RoleBadge({ role }: { role: string }) {
   const isAdmin = role === "ADMIN"
   return (
@@ -88,13 +91,13 @@ function StatCard({ label, value, sub, icon: Icon, color, delay = 0, loading }: 
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay, duration: 0.28 }}
       style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: "18px 20px", position: "relative", overflow: "hidden" }}>
-      <div style={{ position: "absolute", top: 0, right: 0, width: 80, height: 80, borderRadius: "50%", background: `radial-gradient(circle,${color}18 0%,transparent 70%)`, transform: "translate(20px,-20px)" }} />
+      <div style={{ position: "absolute", top: 0, right: 0, width: 80, height: 80, borderRadius: "50%", background: `radial-gradient(circle,${color}18 0%,transparent 70%)`, transform: "translate(20px,-20px)", pointerEvents: "none" }} />
       <div style={{ width: 34, height: 34, borderRadius: 10, background: `${color}18`, border: `1px solid ${color}30`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
         <Icon size={16} color={color} />
       </div>
       {loading
         ? <div style={{ height: 32, display: "flex", alignItems: "center" }}><Loader2 size={16} color={color} style={{ animation: "au-spin 1s linear infinite" }} /></div>
-        : <div style={{ fontSize: 26, fontWeight: 800, color: "#fff", lineHeight: 1, marginBottom: 4, fontFamily: "'Syne',sans-serif" }}>{value}</div>
+        : <div style={{ fontSize: 24, fontWeight: 800, color: "#fff", lineHeight: 1, marginBottom: 4, fontFamily: "'Syne',sans-serif" }}>{value}</div>
       }
       <div style={{ fontSize: 12, color: "#6b7280" }}>{label}</div>
       {sub && <div style={{ fontSize: 11, color, fontWeight: 500, marginTop: 2 }}>{sub}</div>}
@@ -112,13 +115,10 @@ function DeleteModal({ user, onConfirm, onCancel, loading }: {
       <motion.div initial={{ scale: 0.92, y: 12 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.92, y: 12 }}
         onClick={e => e.stopPropagation()}
         style={{ background: "linear-gradient(160deg,#0f0f24,#0a0a15)", border: "1px solid rgba(239,68,68,0.28)", borderRadius: 20, padding: "28px 28px 24px", maxWidth: 400, width: "100%", fontFamily: "'DM Sans',sans-serif" }}>
-
         <div style={{ width: 48, height: 48, borderRadius: 14, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 18 }}>
           <Trash2 size={20} color="#f87171" />
         </div>
         <div style={{ fontSize: 17, fontWeight: 800, color: "#fff", fontFamily: "'Syne',sans-serif", marginBottom: 14 }}>Delete Account?</div>
-
-        {/* User preview chip */}
         <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 12, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", marginBottom: 16 }}>
           <Avatar user={user} size={38} />
           <div>
@@ -126,12 +126,10 @@ function DeleteModal({ user, onConfirm, onCancel, loading }: {
             <div style={{ fontSize: 11, color: "#6b7280", marginTop: 1 }}>@{user.username} · {user.email}</div>
           </div>
         </div>
-
         <p style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.65, marginBottom: 24 }}>
           Permanently deletes this account and all associated data.{" "}
           <span style={{ color: "#f87171", fontWeight: 600 }}>This cannot be undone.</span>
         </p>
-
         <div style={{ display: "flex", gap: 10 }}>
           <motion.button whileTap={{ scale: 0.97 }} onClick={onCancel}
             style={{ flex: 1, padding: "10px 0", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.5)", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
@@ -139,9 +137,7 @@ function DeleteModal({ user, onConfirm, onCancel, loading }: {
           </motion.button>
           <motion.button whileTap={{ scale: 0.97 }} onClick={onConfirm} disabled={loading}
             style={{ flex: 1, padding: "10px 0", borderRadius: 10, border: "none", background: loading ? "rgba(239,68,68,0.2)" : "linear-gradient(135deg,#ef4444,#dc2626)", fontSize: 13, fontWeight: 700, color: loading ? "rgba(255,255,255,0.3)" : "#fff", cursor: loading ? "not-allowed" : "pointer", fontFamily: "'DM Sans',sans-serif", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
-            {loading
-              ? <><Loader2 size={13} style={{ animation: "au-spin 0.8s linear infinite" }} />Deleting…</>
-              : <><Trash2 size={13} />Delete Account</>}
+            {loading ? <><Loader2 size={13} style={{ animation: "au-spin 0.8s linear infinite" }} />Deleting…</> : <><Trash2 size={13} />Delete Account</>}
           </motion.button>
         </div>
       </motion.div>
@@ -149,7 +145,7 @@ function DeleteModal({ user, onConfirm, onCancel, loading }: {
   )
 }
 
-// ── Drawer info row ────────────────────────────────────────────────────────
+// ── Drawer helpers ─────────────────────────────────────────────────────────
 function InfoRow({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value?: string | null }) {
   return (
     <div style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "10px 14px", borderRadius: 10, background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", opacity: value ? 1 : 0.4 }}>
@@ -161,11 +157,8 @@ function InfoRow({ icon: Icon, label, value }: { icon: React.ElementType; label:
     </div>
   )
 }
-
-// ── Drawer action button ───────────────────────────────────────────────────
 function DrawerAction({ icon: Icon, label, color, warn = false, loading = false, onClick }: {
-  icon: React.ElementType; label: string; color: string
-  warn?: boolean; loading?: boolean; onClick?: () => void
+  icon: React.ElementType; label: string; color: string; warn?: boolean; loading?: boolean; onClick?: () => void
 }) {
   return (
     <motion.button whileHover={{ x: 2 }} whileTap={{ scale: 0.98 }} onClick={onClick} disabled={loading}
@@ -179,32 +172,32 @@ function DrawerAction({ icon: Icon, label, color, warn = false, loading = false,
 }
 
 // ── User drawer ────────────────────────────────────────────────────────────
-function UserDrawer({ user, onClose, onDeleteRequest }: {
-  user: ApiUser; onClose: () => void; onDeleteRequest: (u: ApiUser) => void
+function UserDrawer({ user, onClose, onDeleteRequest, isMobile }: {
+  user: ApiUser; onClose: () => void; onDeleteRequest: (u: ApiUser) => void; isMobile: boolean
 }) {
   const { ban, unban } = useUserStore()
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [toast, setToast]                 = useState<{ msg: string; ok: boolean } | null>(null)
   const [local, setLocal]                 = useState<ApiUser>(user)
 
-  function showToast(msg: string, ok = true) {
-    setToast({ msg, ok })
-    setTimeout(() => setToast(null), 3200)
-  }
+  function showToast(msg: string, ok = true) { setToast({ msg, ok }); setTimeout(() => setToast(null), 3200) }
+
   async function handleBan() {
     setActionLoading("ban")
     const r = await ban(local)
     if (r.ok) setLocal({ ...local, status: "banned" as const })
-    showToast(r.message, r.ok)
-    setActionLoading(null)
+    showToast(r.message, r.ok); setActionLoading(null)
   }
   async function handleUnban() {
     setActionLoading("unban")
     const r = await unban(local)
     if (r.ok) setLocal({ ...local, status: "active" as const })
-    showToast(r.message, r.ok)
-    setActionLoading(null)
+    showToast(r.message, r.ok); setActionLoading(null)
   }
+
+  const panelStyle: React.CSSProperties = isMobile
+    ? { position: "fixed", left: 0, right: 0, bottom: 0, maxHeight: "90vh", borderRadius: "20px 20px 0 0", borderTop: "1px solid rgba(255,255,255,0.09)", borderLeft: "none", borderRight: "none" }
+    : { position: "fixed", top: 0, right: 0, bottom: 0, width: 400, borderLeft: "1px solid rgba(255,255,255,0.09)" }
 
   return (
     <AnimatePresence>
@@ -213,9 +206,11 @@ function UserDrawer({ user, onClose, onDeleteRequest }: {
         style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.65)", backdropFilter: "blur(8px)", zIndex: 200 }} />
 
       <motion.div key="pn"
-        initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
+        initial={isMobile ? { y: "100%" } : { x: "100%" }}
+        animate={isMobile ? { y: 0 } : { x: 0 }}
+        exit={isMobile ? { y: "100%" } : { x: "100%" }}
         transition={{ type: "spring", damping: 28, stiffness: 220 }}
-        style={{ position: "fixed", top: 0, right: 0, bottom: 0, width: 400, background: "rgba(9,9,16,0.99)", borderLeft: "1px solid rgba(255,255,255,0.09)", zIndex: 201, overflowY: "auto", fontFamily: "'DM Sans',sans-serif", color: "white" }}>
+        style={{ background: "rgba(9,9,16,0.99)", zIndex: 201, overflowY: "auto", fontFamily: "'DM Sans',sans-serif", color: "white", ...panelStyle }}>
 
         {/* Toast */}
         <AnimatePresence>
@@ -227,6 +222,13 @@ function UserDrawer({ user, onClose, onDeleteRequest }: {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Drag handle on mobile */}
+        {isMobile && (
+          <div style={{ display: "flex", justifyContent: "center", padding: "10px 0 0" }}>
+            <div style={{ width: 36, height: 4, borderRadius: 2, background: "rgba(255,255,255,0.12)" }} />
+          </div>
+        )}
 
         {/* Header */}
         <div style={{ padding: "20px 24px 18px", position: "sticky", top: 0, background: "rgba(9,9,16,0.98)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(255,255,255,0.07)", zIndex: 1 }}>
@@ -245,7 +247,7 @@ function UserDrawer({ user, onClose, onDeleteRequest }: {
             <div>
               <div style={{ fontSize: 17, fontWeight: 800, color: "#fff", fontFamily: "'Syne',sans-serif" }}>{local.first_name} {local.last_name}</div>
               <div style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>@{local.username}</div>
-              <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+              <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
                 <RoleBadge role={local.role} />
                 <StatusBadge status={local.status} />
               </div>
@@ -254,7 +256,6 @@ function UserDrawer({ user, onClose, onDeleteRequest }: {
         </div>
 
         <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 20 }}>
-          {/* Mini stats */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             {[
               { label: "Reports Filed", value: local.reports, color: "#6366f1" },
@@ -267,7 +268,6 @@ function UserDrawer({ user, onClose, onDeleteRequest }: {
             ))}
           </div>
 
-          {/* Contact */}
           <div>
             <div style={{ fontSize: 10, fontWeight: 700, color: "#4b5563", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 10 }}>Contact Info</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -279,7 +279,6 @@ function UserDrawer({ user, onClose, onDeleteRequest }: {
             </div>
           </div>
 
-          {/* Bio */}
           {local.profile?.bio && (
             <div>
               <div style={{ fontSize: 10, fontWeight: 700, color: "#4b5563", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 8 }}>Bio</div>
@@ -289,19 +288,16 @@ function UserDrawer({ user, onClose, onDeleteRequest }: {
             </div>
           )}
 
-          {/* Actions */}
           <div>
             <div style={{ fontSize: 10, fontWeight: 700, color: "#4b5563", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 10 }}>Admin Actions</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               <DrawerAction icon={Mail} label="Send Message" color="#0ea5e9" />
               {local.status !== "banned"
-                ? <DrawerAction icon={UserX}    label="Ban User"   color="#f59e0b" warn loading={actionLoading === "ban"}   onClick={handleBan}   />
-                : <DrawerAction icon={UserCheck} label="Unban User" color="#34d399"      loading={actionLoading === "unban"} onClick={handleUnban} />
+                ? <DrawerAction icon={UserX}     label="Ban User"    color="#f59e0b" warn loading={actionLoading === "ban"}   onClick={handleBan}   />
+                : <DrawerAction icon={UserCheck} label="Unban User"  color="#34d399"      loading={actionLoading === "unban"} onClick={handleUnban} />
               }
-              <DrawerAction
-                icon={Trash2} label="Delete Account" color="#ef4444" warn
-                onClick={() => { onClose(); onDeleteRequest(local) }}
-              />
+              <DrawerAction icon={Trash2} label="Delete Account" color="#ef4444" warn
+                onClick={() => { onClose(); onDeleteRequest(local) }} />
             </div>
           </div>
         </div>
@@ -310,21 +306,23 @@ function UserDrawer({ user, onClose, onDeleteRequest }: {
   )
 }
 
-// ── Skeleton ───────────────────────────────────────────────────────────────
-function SkeletonRow() {
+// ── Skeleton row ───────────────────────────────────────────────────────────
+function SkeletonRow({ cols }: { cols: string }) {
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "36px 1fr 150px 80px 130px 130px", gap: 14, padding: "14px 20px", borderBottom: "1px solid rgba(255,255,255,0.04)", alignItems: "center" }}>
+    <div style={{ display: "grid", gridTemplateColumns: cols, gap: 12, padding: "14px 20px", borderBottom: "1px solid rgba(255,255,255,0.04)", alignItems: "center" }}>
       <div style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(255,255,255,0.06)" }} />
       <div>
-        <div style={{ width: 130, height: 12, borderRadius: 6, background: "rgba(255,255,255,0.06)", marginBottom: 6 }} />
-        <div style={{ width: 80, height: 10, borderRadius: 6, background: "rgba(255,255,255,0.04)" }} />
+        <div style={{ width: 120, height: 12, borderRadius: 6, background: "rgba(255,255,255,0.06)", marginBottom: 6 }} />
+        <div style={{ width: 75, height: 10, borderRadius: 6, background: "rgba(255,255,255,0.04)" }} />
       </div>
-      {[130, 50, 110, 90].map((w, j) => <div key={j} style={{ width: w, height: 12, borderRadius: 6, background: "rgba(255,255,255,0.05)" }} />)}
+      <div style={{ width: 110, height: 12, borderRadius: 6, background: "rgba(255,255,255,0.05)" }} />
+      <div style={{ width: 40, height: 12, borderRadius: 6, background: "rgba(255,255,255,0.05)" }} />
+      <div style={{ width: 100, height: 12, borderRadius: 6, background: "rgba(255,255,255,0.05)" }} />
     </div>
   )
 }
 
-// ── Page button ────────────────────────────────────────────────────────────
+// ── Pagination button ──────────────────────────────────────────────────────
 function PageBtn({ label, onClick, active, disabled }: { label: string; onClick: () => void; active?: boolean; disabled?: boolean }) {
   return (
     <motion.button whileTap={!disabled ? { scale: 0.93 } : {}} onClick={onClick} disabled={disabled}
@@ -337,17 +335,18 @@ function PageBtn({ label, onClick, active, disabled }: { label: string; onClick:
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //  MAIN PAGE
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-const COLS = "36px 1fr 150px 80px 130px 130px"
-const HEADERS: { label: string; field: SortField | null }[] = [
-  { label: "",              field: null          },
-  { label: "User",          field: "name"        },
-  { label: "Role / Status", field: "role"        },
-  { label: "Reports",       field: "reports"     },
-  { label: "Email",         field: null          },
-  { label: "Joined",        field: "date_joined" },
-]
-
 export default function AllUsers() {
+  const isMobile = useIsMobile(768)
+  const isTablet = useIsMobile(1024)
+
+  // responsive columns: hide Email on tablet, hide Email+Joined on mobile
+  const COLS    = isMobile ? "36px 1fr 120px 50px" : isTablet ? "36px 1fr 150px 60px 120px" : "36px 1fr 150px 60px 130px 130px"
+  const HEADERS = isMobile
+    ? [{ label: "", field: null }, { label: "User", field: "name" as SortField }, { label: "Role / Status", field: "role" as SortField }, { label: "Reports", field: "reports" as SortField }]
+    : isTablet
+      ? [{ label: "", field: null }, { label: "User", field: "name" as SortField }, { label: "Role / Status", field: "role" as SortField }, { label: "Rpts", field: "reports" as SortField }, { label: "Joined", field: "date_joined" as SortField }]
+      : [{ label: "", field: null }, { label: "User", field: "name" as SortField }, { label: "Role / Status", field: "role" as SortField }, { label: "Reports", field: "reports" as SortField }, { label: "Email", field: null }, { label: "Joined", field: "date_joined" as SortField }]
+
   const { users, stats, loading, statsLoading, error, refresh, clearError, remove } = useUserStore()
 
   const [search,        setSearch]        = useState("")
@@ -413,16 +412,17 @@ export default function AllUsers() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap');
         @keyframes au-spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-        .au-row { transition: background 0.14s; cursor: pointer; }
-        .au-row:hover { background: rgba(99,102,241,0.06) !important; }
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.3); border-radius: 4px; }
+        .au-row { transition:background 0.14s; cursor:pointer; }
+        .au-row:hover { background:rgba(99,102,241,0.06) !important; }
+        ::-webkit-scrollbar { width:4px; }
+        ::-webkit-scrollbar-thumb { background:rgba(99,102,241,0.3); border-radius:4px; }
       `}</style>
 
       {/* Overlays */}
       <AnimatePresence>
         {selectedUser && (
-          <UserDrawer key="drw" user={selectedUser} onClose={() => setSelectedUser(null)}
+          <UserDrawer key="drw" user={selectedUser} isMobile={isMobile}
+            onClose={() => setSelectedUser(null)}
             onDeleteRequest={u => { setSelectedUser(null); setDeleteTarget(u) }} />
         )}
       </AnimatePresence>
@@ -441,14 +441,14 @@ export default function AllUsers() {
               <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <Users size={17} color="#818cf8" />
               </div>
-              <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: "-0.8px", color: "#fff", margin: 0, fontFamily: "'Syne',sans-serif" }}>All Users</h1>
+              <h1 style={{ fontSize: 24, fontWeight: 800, letterSpacing: "-0.8px", color: "#fff", margin: 0, fontFamily: "'Syne',sans-serif" }}>All Users</h1>
             </div>
             <p style={{ fontSize: 13, color: "#6b7280", margin: 0 }}>Manage accounts, roles, and access across Findify</p>
           </div>
-          <div style={{ display: "flex", gap: 8 }}>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}
-              style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 16px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.55)", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
-              <Download size={13} />Export
+              style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 14px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.55)", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
+              <Download size={13} />{!isMobile && "Export"}
             </motion.button>
             <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }} onClick={refresh} disabled={loading}
               style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 16px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#6366f1,#8b5cf6)", fontSize: 13, fontWeight: 600, color: "#fff", cursor: loading ? "not-allowed" : "pointer", fontFamily: "'DM Sans',sans-serif", boxShadow: "0 4px 16px rgba(99,102,241,0.3)", opacity: loading ? 0.7 : 1 }}>
@@ -472,8 +472,8 @@ export default function AllUsers() {
         )}
       </AnimatePresence>
 
-      {/* ── Stats ── */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(148px,1fr))", gap: 12, marginBottom: 24 }}>
+      {/* ── Stat Cards ── */}
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2,1fr)" : "repeat(auto-fit,minmax(140px,1fr))", gap: 12, marginBottom: 24 }}>
         <StatCard icon={Users}       label="Total Users"    value={stats?.total          ?? "—"} sub="All accounts"     color="#6366f1" delay={0}    loading={statsLoading} />
         <StatCard icon={ShieldCheck} label="Administrators" value={stats?.admins         ?? "—"} sub="Full access"      color="#8b5cf6" delay={0.06} loading={statsLoading} />
         <StatCard icon={Activity}    label="Active"         value={stats?.active         ?? "—"} sub="Currently active" color="#34d399" delay={0.12} loading={statsLoading} />
@@ -485,9 +485,9 @@ export default function AllUsers() {
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
         style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: "14px 16px", marginBottom: 12 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-          <div style={{ position: "relative", flex: 1, minWidth: 200 }}>
+          <div style={{ position: "relative", flex: 1, minWidth: 180 }}>
             <Search size={14} color="#6b7280" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
-            <input placeholder="Search name, username or email…" value={search}
+            <input placeholder={isMobile ? "Search…" : "Search name, username or email…"} value={search}
               onChange={e => { setSearch(e.target.value); setPage(1) }}
               style={{ width: "100%", background: "#10101e", border: "1px solid rgba(255,255,255,0.09)", borderRadius: 10, padding: "9px 36px", fontSize: 13, color: "#fff", outline: "none", fontFamily: "'DM Sans',sans-serif", boxSizing: "border-box", transition: "border-color 0.2s, box-shadow 0.2s" }}
               onFocus={e => { e.currentTarget.style.borderColor = "rgba(99,102,241,0.5)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(99,102,241,0.1)" }}
@@ -501,24 +501,25 @@ export default function AllUsers() {
             )}
           </div>
           <motion.button whileTap={{ scale: 0.96 }} onClick={() => setShowFilters(v => !v)}
-            style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 14px", borderRadius: 10, border: showFilters ? "1px solid rgba(99,102,241,0.4)" : "1px solid rgba(255,255,255,0.1)", background: showFilters ? "rgba(99,102,241,0.12)" : "rgba(255,255,255,0.04)", fontSize: 13, fontWeight: 500, color: showFilters ? "#a5b4fc" : "rgba(255,255,255,0.55)", cursor: "pointer", fontFamily: "'DM Sans',sans-serif", transition: "all 0.2s" }}>
-            <Filter size={13} />Filters
+            style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 14px", borderRadius: 10, border: showFilters ? "1px solid rgba(99,102,241,0.4)" : "1px solid rgba(255,255,255,0.1)", background: showFilters ? "rgba(99,102,241,0.12)" : "rgba(255,255,255,0.04)", fontSize: 13, fontWeight: 500, color: showFilters ? "#a5b4fc" : "rgba(255,255,255,0.55)", cursor: "pointer", fontFamily: "'DM Sans',sans-serif", transition: "all 0.2s", flexShrink: 0 }}>
+            <Filter size={13} />
+            {!isMobile && "Filters"}
             {activeFilterCount > 0 && (
               <span style={{ width: 16, height: 16, borderRadius: "50%", background: "#6366f1", fontSize: 9, fontWeight: 700, color: "white", display: "flex", alignItems: "center", justifyContent: "center" }}>{activeFilterCount}</span>
             )}
           </motion.button>
-          <div style={{ fontSize: 12, color: "#4b5563", marginLeft: "auto" }}>
-            {loading ? "…" : filtered.length} / {loading ? "…" : users.length} users
+          <div style={{ fontSize: 12, color: "#4b5563", marginLeft: "auto", whiteSpace: "nowrap" }}>
+            {loading ? "…" : `${filtered.length}/${users.length}`}
           </div>
         </div>
 
         <AnimatePresence>
           {showFilters && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.18 }} style={{ overflow: "hidden" }}>
-              <div style={{ paddingTop: 14, marginTop: 14, borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", gap: 24, flexWrap: "wrap", alignItems: "flex-end" }}>
+              <div style={{ paddingTop: 14, marginTop: 14, borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", gap: 16, flexWrap: "wrap", alignItems: "flex-end" }}>
                 <div>
                   <div style={{ fontSize: 10, fontWeight: 700, color: "#4b5563", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 8 }}>Role</div>
-                  <div style={{ display: "flex", gap: 6 }}>
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                     {(["all","ADMIN","USER"] as RoleFilter[]).map(r => (
                       <button key={r} onClick={() => { setRoleFilter(r); setPage(1) }}
                         style={{ padding: "5px 12px", borderRadius: 8, border: roleFilter === r ? "1px solid rgba(99,102,241,0.4)" : "1px solid rgba(255,255,255,0.1)", background: roleFilter === r ? "rgba(99,102,241,0.15)" : "rgba(255,255,255,0.04)", fontSize: 12, fontWeight: 500, color: roleFilter === r ? "#a5b4fc" : "rgba(255,255,255,0.5)", cursor: "pointer", fontFamily: "'DM Sans',sans-serif", transition: "all 0.18s" }}>
@@ -529,7 +530,7 @@ export default function AllUsers() {
                 </div>
                 <div>
                   <div style={{ fontSize: 10, fontWeight: 700, color: "#4b5563", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 8 }}>Status</div>
-                  <div style={{ display: "flex", gap: 6 }}>
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                     {(["all","active","inactive","banned"] as StatusFilter[]).map(s => (
                       <button key={s} onClick={() => { setStatusFilter(s); setPage(1) }}
                         style={{ padding: "5px 12px", borderRadius: 8, border: statusFilter === s ? "1px solid rgba(99,102,241,0.4)" : "1px solid rgba(255,255,255,0.1)", background: statusFilter === s ? "rgba(99,102,241,0.15)" : "rgba(255,255,255,0.04)", fontSize: 12, fontWeight: 500, color: statusFilter === s ? "#a5b4fc" : "rgba(255,255,255,0.5)", cursor: "pointer", fontFamily: "'DM Sans',sans-serif", textTransform: "capitalize", transition: "all 0.18s" }}>
@@ -555,7 +556,7 @@ export default function AllUsers() {
         style={{ borderRadius: 16, border: "1px solid rgba(255,255,255,0.07)", background: "rgba(255,255,255,0.01)", overflow: "hidden" }}>
 
         {/* Column headers */}
-        <div style={{ display: "grid", gridTemplateColumns: COLS, gap: 14, padding: "10px 20px", borderBottom: "1px solid rgba(255,255,255,0.07)", background: "rgba(255,255,255,0.02)" }}>
+        <div style={{ display: "grid", gridTemplateColumns: COLS, gap: 12, padding: "10px 20px", borderBottom: "1px solid rgba(255,255,255,0.07)", background: "rgba(255,255,255,0.02)" }}>
           {HEADERS.map((col, i) => (
             <div key={i} onClick={col.field ? () => toggleSort(col.field as SortField) : undefined}
               style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.2, textTransform: "uppercase", color: sortField === col.field ? "#818cf8" : "#374151", display: "flex", alignItems: "center", gap: 5, cursor: col.field ? "pointer" : "default", userSelect: "none" }}>
@@ -567,7 +568,7 @@ export default function AllUsers() {
 
         {/* Rows */}
         {loading ? (
-          Array.from({ length: 8 }).map((_, i) => <SkeletonRow key={i} />)
+          Array.from({ length: 8 }).map((_, i) => <SkeletonRow key={i} cols={COLS} />)
         ) : paginated.length === 0 ? (
           <div style={{ padding: "60px 20px", textAlign: "center" }}>
             <div style={{ fontSize: 36, marginBottom: 14 }}>🔍</div>
@@ -580,19 +581,15 @@ export default function AllUsers() {
               initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.03 }}
               className="au-row"
               onClick={() => setSelectedUser(user)}
-              style={{
-                display: "grid", gridTemplateColumns: COLS, gap: 14,
-                padding: "13px 20px", alignItems: "center",
-                borderBottom: idx < paginated.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
-              }}
-            >
-              {/* Avatar with online dot */}
+              style={{ display: "grid", gridTemplateColumns: COLS, gap: 12, padding: "13px 20px", alignItems: "center", borderBottom: idx < paginated.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
+
+              {/* Avatar */}
               <div style={{ position: "relative", width: 32, height: 32 }}>
                 <Avatar user={user} size={32} />
                 <span style={{ position: "absolute", bottom: 0, right: 0, width: 8, height: 8, borderRadius: "50%", background: user.status === "active" ? "#34d399" : user.status === "banned" ? "#ef4444" : "#6b7280", border: "1.5px solid #080814" }} />
               </div>
 
-              {/* Name */}
+              {/* Name + username */}
               <div style={{ minWidth: 0 }}>
                 <div style={{ fontSize: 13, fontWeight: 700, color: "#e2e8f0", fontFamily: "'Syne',sans-serif", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                   {user.first_name} {user.last_name}
@@ -601,40 +598,44 @@ export default function AllUsers() {
               </div>
 
               {/* Role + Status */}
-              <div style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap" }}>
                 <RoleBadge role={user.role} />
-                <StatusBadge status={user.status} />
+                {!isMobile && <StatusBadge status={user.status} />}
               </div>
 
               {/* Reports */}
-              <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                 <ClipboardList size={11} color="#4b5563" />
                 <span style={{ fontSize: 13, fontWeight: 700, color: user.reports > 0 ? "#a5b4fc" : "#374151" }}>{user.reports}</span>
-                {user.claims > 0 && <span style={{ fontSize: 10, color: "#374151" }}>/{user.claims}</span>}
+                {user.claims > 0 && !isMobile && <span style={{ fontSize: 10, color: "#374151" }}>/{user.claims}</span>}
               </div>
 
-              {/* Email */}
-              <div style={{ fontSize: 11, color: "#6b7280", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {user.email}
-              </div>
-
-              {/* Joined */}
-              <div>
-                <div style={{ fontSize: 11, color: "#9ca3af", display: "flex", alignItems: "center", gap: 4 }}>
-                  <Calendar size={10} color="#374151" />
-                  {new Date(user.date_joined).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+              {/* Email — hidden on mobile */}
+              {!isMobile && !isTablet && (
+                <div style={{ fontSize: 11, color: "#6b7280", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {user.email}
                 </div>
-                <div style={{ fontSize: 10, color: "#374151", marginTop: 1 }}>{fmtShort(user.date_joined)}</div>
-              </div>
+              )}
+
+              {/* Joined — hidden on mobile */}
+              {!isMobile && (
+                <div>
+                  <div style={{ fontSize: 11, color: "#9ca3af", display: "flex", alignItems: "center", gap: 4 }}>
+                    <Calendar size={10} color="#374151" />
+                    {new Date(user.date_joined).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                  </div>
+                  <div style={{ fontSize: 10, color: "#374151", marginTop: 1 }}>{fmtShort(user.date_joined)}</div>
+                </div>
+              )}
             </motion.div>
           ))
         )}
 
         {/* Pagination */}
         {!loading && totalPages > 1 && (
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 20px", borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 20px", borderTop: "1px solid rgba(255,255,255,0.07)", flexWrap: "wrap", gap: 8 }}>
             <div style={{ fontSize: 12, color: "#4b5563" }}>
-              Showing {(page - 1) * PER_PAGE + 1}–{Math.min(page * PER_PAGE, filtered.length)} of {filtered.length}
+              {(page - 1) * PER_PAGE + 1}–{Math.min(page * PER_PAGE, filtered.length)} of {filtered.length}
             </div>
             <div style={{ display: "flex", gap: 5 }}>
               <PageBtn label="←" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} />
