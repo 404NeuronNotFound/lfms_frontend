@@ -20,6 +20,7 @@ const ADMIN_NAV = [
     group: "Overview",
     items: [
       { icon: LayoutDashboard, label: "Dashboard",  href: "/admin-dashboard",  badgeKey: null },
+      { icon: Bell,            label: "Notifications", href: "/admin-notifications", badgeKey: "unread" },
     ],
   },
   {
@@ -38,7 +39,7 @@ const ADMIN_NAV = [
   {
     group: "System",
     items: [
-      { icon: FileText, label: "Audit Logs", href: "/admin-logs",     badgeKey: null },
+      { icon: FileText, label: "Audit Logs", href: "/admin-audit-logs",     badgeKey: null },
       { icon: Settings, label: "Settings",   href: "/admin-settings", badgeKey: null },
     ],
   },
