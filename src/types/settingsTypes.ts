@@ -61,9 +61,8 @@ export interface DeleteAccountPayload {
   password: string
 }
 
-// ── Deactivate / Reactivate account ──────────────────────────────────────
 export interface DeactivateAccountPayload {
-  refresh?: string       // optional: blacklists current refresh token server-side
+  refresh?: string       
 }
 
 export interface DeactivateAccountResponse {

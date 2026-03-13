@@ -38,7 +38,7 @@ export interface UserListResponse {
   users: ApiUser[]
 }
 
-// ── UI-only filter / sort types ───────────────────────────────────────────
+
 export type SortField    = "name" | "date_joined" | "reports" | "role"
 export type SortDir      = "asc"  | "desc"
 export type RoleFilter   = "all"  | "ADMIN" | "USER"

@@ -70,7 +70,7 @@ function toFormData(payload: CreateReportPayload): FormData {
     fd.append("contact_phone",           payload.contact_phone.trim())
   if (payload.found_stored_at?.trim())
     fd.append("found_stored_at",         payload.found_stored_at.trim())  // found flow only
-
+  
   // Boolean — Django expects string "true"/"false" in form data
   fd.append("is_urgent", payload.is_urgent ? "true" : "false")
 

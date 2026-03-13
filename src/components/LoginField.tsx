@@ -329,14 +329,14 @@ export function LoginField() {
           }
         </button>
 
-        {/* Divider */}
+
         <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "24px 0" }}>
           <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.07)" }} />
           <span style={{ fontSize: 12, color: "rgba(255,255,255,0.25)" }}>or</span>
           <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.07)" }} />
         </div>
 
-        {/* Register link */}
+    
         <p style={{ textAlign: "center", fontSize: 13, color: "rgba(255,255,255,0.4)" }}>
           Don't have an account?{" "}
           <a href="/register" style={{ color: "#818cf8", fontWeight: 600, textDecoration: "none" }}>Create one</a>
