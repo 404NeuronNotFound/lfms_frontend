@@ -1,80 +1,63 @@
 import { create } from "zustand"
 import {
-  createReport,
   getMyReports,
   getReport,
+  createReport,
   updateReport,
   deleteReport,
 } from "@/api/reportApi"
 import type {
   Report,
   ReportListItem,
-  CreateReportPayload,
-  UpdateReportPayload,
   ReportStatus,
   ReportType,
+  CreateReportPayload,
+  UpdateReportPayload,
 } from "@/types/reportTypes"
-
-// backward-compat aliases used in this file
-type LostReport         = Report
-type LostReportListItem = ReportListItem
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  STATE SHAPE
 // ─────────────────────────────────────────────────────────────────────────────
-
 interface ReportState {
   // list
-  reports:       LostReportListItem[]
+  reports:       ReportListItem[]
   reportCount:   number
   loadingList:   boolean
   listError:     string | null
 
-  // active detail
-  activeReport:  LostReport | null
+  // detail
+  activeReport:  Report | null
   loadingDetail: boolean
   detailError:   string | null
 
-  // mutations
+  // create
   submitting:    boolean
   submitError:   string | null
-  submitSuccess: boolean   // true after a successful create → triggers success screen
+  submitSuccess: boolean
 
+  // edit
+  editing:       boolean
+  editError:     string | null
+  editSuccess:   boolean
+
+  // delete
   deleting:      boolean
   deleteError:   string | null
 
-  // ── Actions ────────────────────────────────────────────────────────────────
-
-  /** Fetch current user's reports. Optional filters: status and/or report type. */
+  // actions
   fetchMyReports: (filters?: { status?: ReportStatus; type?: ReportType }) => Promise<void>
-
-  /** Fetch one report by ID. */
-  fetchReport: (id: number) => Promise<void>
-
-  /**
-   * Submit a new lost report.
-   * Sets submitSuccess=true on success — the page watches this to show the
-   * success screen. Call resetSubmit() when the user navigates away or resets.
-   */
-  submitReport: (payload: CreateReportPayload) => Promise<void>
-
-  /** Partially update an existing report. */
-  editReport: (id: number, payload: UpdateReportPayload) => Promise<void>
-
-  /** Delete a report by ID. */
-  removeReport: (id: number) => Promise<void>
-
-  /** Reset submit state (error + success flag) — call before re-using the form. */
-  resetSubmit: () => void
-
-  /** Clear all error messages. */
-  clearErrors: () => void
+  fetchReport:    (id: number) => Promise<void>
+  submitReport:   (payload: CreateReportPayload) => Promise<void>
+  editReport:     (id: number, payload: UpdateReportPayload) => Promise<boolean>
+  removeReport:   (id: number) => Promise<boolean>
+  resetSubmit:    () => void
+  resetEdit:      () => void
+  clearErrors:    () => void
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  STORE
 // ─────────────────────────────────────────────────────────────────────────────
-
 export const useReportStore = create<ReportState>((set, get) => ({
   reports:       [],
   reportCount:   0,
@@ -89,63 +72,58 @@ export const useReportStore = create<ReportState>((set, get) => ({
   submitError:   null,
   submitSuccess: false,
 
+  editing:       false,
+  editError:     null,
+  editSuccess:   false,
+
   deleting:      false,
   deleteError:   null,
 
-  // ── fetchMyReports ─────────────────────────────────────────────────────────
+  // ── fetchMyReports ──────────────────────────────────────────────────────────
   fetchMyReports: async (filters) => {
     set({ loadingList: true, listError: null })
     try {
       const data = await getMyReports(filters)
       set({
-        reports:     data.results,
-        reportCount: data.count,
+        reports:     data.results ?? data,
+        reportCount: data.count   ?? (data.results ?? data).length,
         loadingList: false,
       })
     } catch (err: any) {
-      set({
-        loadingList: false,
-        listError:   err?.message ?? "Failed to load reports.",
-      })
+      set({ loadingList: false, listError: err?.message ?? "Failed to load reports." })
     }
   },
 
-  // ── fetchReport ────────────────────────────────────────────────────────────
+  // ── fetchReport ─────────────────────────────────────────────────────────────
   fetchReport: async (id) => {
-    set({ loadingDetail: true, detailError: null, activeReport: null })
+    set({ loadingDetail: true, detailError: null })
     try {
       const report = await getReport(id)
       set({ activeReport: report, loadingDetail: false })
     } catch (err: any) {
-      set({
-        loadingDetail: false,
-        detailError:   err?.message ?? "Failed to load report.",
-      })
+      set({ loadingDetail: false, detailError: err?.message ?? "Failed to load report." })
     }
   },
 
-  // ── submitReport ───────────────────────────────────────────────────────────
+  // ── submitReport ────────────────────────────────────────────────────────────
   submitReport: async (payload) => {
     set({ submitting: true, submitError: null, submitSuccess: false })
     try {
       await createReport(payload)
       set({ submitting: false, submitSuccess: true })
     } catch (err: any) {
-      set({
-        submitting:  false,
-        submitError: err?.message ?? "Failed to submit report. Please try again.",
-      })
+      set({ submitting: false, submitError: err?.message ?? "Failed to submit report." })
     }
   },
 
-  // ── editReport ─────────────────────────────────────────────────────────────
+  // ── editReport ──────────────────────────────────────────────────────────────
   editReport: async (id, payload) => {
-    set({ submitting: true, submitError: null })
+    set({ editing: true, editError: null, editSuccess: false })
     try {
       const { report } = await updateReport(id, payload)
-      // Update in-list entry if it exists
       set(state => ({
-        submitting:   false,
+        editing:      false,
+        editSuccess:  true,
         activeReport: report,
         reports: state.reports.map(r =>
           r.id === id
@@ -153,41 +131,43 @@ export const useReportStore = create<ReportState>((set, get) => ({
             : r
         ),
       }))
+      return true
     } catch (err: any) {
-      set({
-        submitting:  false,
-        submitError: err?.message ?? "Failed to update report.",
-      })
+      set({ editing: false, editError: err?.message ?? "Failed to update report." })
+      return false
     }
   },
 
-  // ── removeReport ───────────────────────────────────────────────────────────
+  // ── removeReport ────────────────────────────────────────────────────────────
   removeReport: async (id) => {
     set({ deleting: true, deleteError: null })
     try {
       await deleteReport(id)
       set(state => ({
-        deleting:    false,
-        reports:     state.reports.filter(r => r.id !== id),
-        reportCount: state.reportCount - 1,
+        deleting:     false,
+        reports:      state.reports.filter(r => r.id !== id),
+        reportCount:  state.reportCount - 1,
         activeReport: state.activeReport?.id === id ? null : state.activeReport,
       }))
+      return true
     } catch (err: any) {
-      set({
-        deleting:    false,
-        deleteError: err?.message ?? "Failed to delete report.",
-      })
+      set({ deleting: false, deleteError: err?.message ?? "Failed to delete report." })
+      return false
     }
   },
 
-  // ── resetSubmit ────────────────────────────────────────────────────────────
+  // ── resetSubmit ─────────────────────────────────────────────────────────────
   resetSubmit: () => set({ submitting: false, submitError: null, submitSuccess: false }),
 
-  // ── clearErrors ────────────────────────────────────────────────────────────
+  // ── resetEdit ───────────────────────────────────────────────────────────────
+  resetEdit: () => set({ editing: false, editError: null, editSuccess: false }),
+
+  // ── clearErrors ─────────────────────────────────────────────────────────────
   clearErrors: () => set({
     listError:   null,
     detailError: null,
     submitError: null,
+    editError:   null,
     deleteError: null,
   }),
 }))
