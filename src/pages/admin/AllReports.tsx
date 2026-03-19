@@ -36,6 +36,7 @@ function useIsMobile(bp = 768) {
   return v
 }
 
+
 function useDebounce<T>(value: T, delay = 400): T {
   const [dv, setDv] = useState(value)
   useEffect(() => {
@@ -636,6 +637,7 @@ function ReviewDrawer({
             animate={isMobile ? { y: 0 } : { x: 0 }}
             exit={isMobile ? { y: "100%" } : { x: "100%" }}
             transition={{ type: "spring", damping: 28, stiffness: 260 }}
+            className={isMobile ? "" : "ar-drawer"}
             style={isMobile ? {
               position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 301,
               maxHeight: "94dvh", borderRadius: "20px 20px 0 0", overflowY: "auto",
@@ -644,7 +646,7 @@ function ReviewDrawer({
               fontFamily: "'DM Sans',sans-serif", color: "white",
             } : {
               position: "fixed", top: 0, right: 0, bottom: 0, zIndex: 301,
-              width: 480, overflowY: "auto",
+              overflowY: "auto",
               background: "linear-gradient(160deg,#0d0d1f,#090910)",
               borderLeft: "1px solid rgba(255,255,255,0.08)",
               boxShadow: "-24px 0 80px rgba(0,0,0,0.6)",
@@ -658,7 +660,7 @@ function ReviewDrawer({
             )}
 
             {/* Header */}
-            <div style={{ padding: isMobile ? "14px 18px 12px" : "20px 24px 16px", borderBottom: "1px solid rgba(255,255,255,0.07)", position: "sticky", top: 0, background: "rgba(9,9,16,0.97)", backdropFilter: "blur(20px)", zIndex: 2 }}>
+            <div className="ar-drawer-hpad" style={{ borderBottom: "1px solid rgba(255,255,255,0.07)", position: "sticky", top: 0, background: "rgba(9,9,16,0.97)", backdropFilter: "blur(20px)", zIndex: 2 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
                 <div>
                   <div style={{ fontSize: 12, fontWeight: 700, color: "#4b5563", textTransform: "uppercase", letterSpacing: 1.2 }}>Review Report</div>
@@ -698,7 +700,7 @@ function ReviewDrawer({
             )}
 
             {r && !loadingDetail && (
-              <div style={{ padding: isMobile ? "16px 18px 40px" : "20px 24px 48px", display: "flex", flexDirection: "column", gap: 22 }}>
+              <div className="ar-drawer-pad" style={{ display: "flex", flexDirection: "column", gap: 22 }}>
 
                 {/* Update error */}
                 <AnimatePresence>
@@ -744,7 +746,7 @@ function ReviewDrawer({
                       <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", fontFamily: "'Syne',sans-serif", letterSpacing: "-0.3px", lineHeight: 1.3, marginBottom: 4 }}>
                         {r.item_name}
                       </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                      <div className="ar-toolbar" style={{ gap: 8 }}>
                         <span style={{ fontSize: 11, color: "#4b5563" }}>{r.category}</span>
                         {r.brand && <span style={{ fontSize: 11, color: "#4b5563" }}>· {r.brand}</span>}
                         {r.color && <span style={{ fontSize: 11, color: "#4b5563" }}>· {r.color}</span>}
@@ -885,7 +887,7 @@ function ReviewDrawer({
                     </div>
                   </div>
 
-                  <div style={{ padding: "18px 18px 20px", display: "flex", flexDirection: "column", gap: 16 }}>
+                  <div className="ar-review-pad" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
 
                     {/* ── MATCHING SECTION ── */}
                     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -1057,7 +1059,7 @@ function ReviewDrawer({
 
                 {/* Metadata */}
                 <div style={{ padding: "14px 16px", borderRadius: 12, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  <div className="ar-meta-grid" style={{ gap: 10 }}>
                     {[
                       { label: "Report ID",    value: `#${r.id}` },
                       { label: "Status",       value: STATUS_CFG[r.status].label },
@@ -1476,6 +1478,29 @@ function ReportCard({ report, onClick, onAiMatch, index }: {
   )
 }
 
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  PAGINATION BUTTON  (consistent with AllUsers)
+// ─────────────────────────────────────────────────────────────────────────────
+function PageBtn({ label, onClick, active, disabled }: {
+  label: string; onClick: () => void; active?: boolean; disabled?: boolean
+}) {
+  return (
+    <motion.button whileTap={!disabled ? { scale: 0.93 } : {}} onClick={onClick} disabled={disabled}
+      style={{
+        minWidth: 32, height: 32, padding: "0 8px", borderRadius: 8,
+        border:      active   ? "1px solid rgba(99,102,241,0.5)" : "1px solid rgba(255,255,255,0.08)",
+        background:  active   ? "rgba(99,102,241,0.2)"           : "rgba(255,255,255,0.03)",
+        fontSize: 13, fontWeight: active ? 700 : 400,
+        color:    active   ? "#a5b4fc" : disabled ? "#2d2d3d" : "rgba(255,255,255,0.5)",
+        cursor:   disabled ? "not-allowed" : "pointer",
+        fontFamily: "'DM Sans',sans-serif", transition: "all 0.15s",
+      }}>
+      {label}
+    </motion.button>
+  )
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 //  MAIN PAGE
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1499,6 +1524,8 @@ export default function AllReports() {
   const [showFilters,    setShowFilters]    = useState(false)
   const [showMatcher,   setShowMatcher]   = useState(false)
   const [autoRunAiId,   setAutoRunAiId]   = useState<number | null>(null)
+  const [page,           setPage]           = useState(1)
+  const PER_PAGE = 10
 
   const activeFilterCount = (statusFilter !== "all" ? 1 : 0) + (typeFilter !== "all" ? 1 : 0) + (categoryFilter !== "all" ? 1 : 0) + (urgentFilter ? 1 : 0)
 
@@ -1512,6 +1539,7 @@ export default function AllReports() {
     if (urgentFilter)             filters.urgent   = true
     if (search.trim())            filters.search   = search.trim()
     fetchReports(filters)
+    setPage(1)
   }, [statusFilter, typeFilter, categoryFilter, urgentFilter, search, ordering])
 
   useEffect(() => { fetchStats() }, [])
@@ -1523,23 +1551,78 @@ export default function AllReports() {
     if (openId === deleteTarget.id) setOpenId(null)
   }
 
+  // ── Pagination ──────────────────────────────────────────────────────────────
+  const totalPages  = Math.ceil(reports.length / PER_PAGE)
+  const paginatedReports = reports.slice((page - 1) * PER_PAGE, page * PER_PAGE)
+
   return (
     <div style={{ minHeight: "100vh", background: "#06060f", color: "white", fontFamily: "'DM Sans',sans-serif", padding: isMobile ? "0 0 48px" : "0 0 60px" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600;700&display=swap');
-        .ar-row:hover  { background: rgba(99,102,241,0.04) !important; }
-        .ar-card:hover { border-color: rgba(99,102,241,0.3) !important; background: rgba(99,102,241,0.04) !important; transform: translateY(-1px); }
-        .ar-pill-active { background: rgba(99,102,241,0.15) !important; border-color: rgba(99,102,241,0.4) !important; color: #a5b4fc !important; }
-        .ar-skeleton { animation: ar-pulse 1.6s ease-in-out infinite; }
+
+        /* ── Animations ── */
         @keyframes ar-pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
         @keyframes ar-spin   { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-        textarea:focus { border-color: rgba(99,102,241,0.4) !important; box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
-        select { appearance: none; }
-        input:focus { border-color: rgba(99,102,241,0.4) !important; box-shadow: 0 0 0 3px rgba(99,102,241,0.08); }
+
+        /* ── Base ── */
+        .ar-row:hover  { background:rgba(99,102,241,0.04) !important; }
+        .ar-card:hover { border-color:rgba(99,102,241,0.3) !important; background:rgba(99,102,241,0.04) !important; transform:translateY(-1px); }
+        .ar-skeleton   { animation:ar-pulse 1.6s ease-in-out infinite; }
+        textarea:focus { border-color:rgba(99,102,241,0.4) !important; box-shadow:0 0 0 3px rgba(99,102,241,0.1); }
+        select         { appearance:none; }
+        input:focus    { border-color:rgba(99,102,241,0.4) !important; box-shadow:0 0 0 3px rgba(99,102,241,0.08); }
+        ::-webkit-scrollbar       { width:4px; }
+        ::-webkit-scrollbar-thumb { background:rgba(99,102,241,0.3); border-radius:4px; }
+
+        /* ── Layout grids ── */
+        .ar-stat-grid   { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:22px; }
+        .ar-header-row  { display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; flex-wrap:wrap; gap:12px; }
+        .ar-toolbar     { display:flex; align-items:center; gap:8px; flex-wrap:nowrap; }
+        .ar-filter-row  { display:flex; gap:14px; flex-wrap:wrap; align-items:flex-end; padding-top:12px; margin-top:12px; border-top:1px solid rgba(255,255,255,0.06); }
+        .ar-drawer      { width:480px; }
+        .ar-drawer-pad  { padding:20px 24px 48px; }
+        .ar-drawer-hpad { padding:20px 24px 16px; }
+        .ar-meta-grid   { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+        .ar-pagination  { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+        .ar-hide-sm     { display:block; }
+        .ar-review-pad  { padding:18px 18px 20px; }
+
+        /* ── ≤ 900px ── */
+        @media (max-width:900px) {
+          .ar-stat-grid  { grid-template-columns:repeat(4,1fr); }
+        }
+
+        /* ── ≤ 768px (tablet/mobile) ── */
+        @media (max-width:768px) {
+          .ar-stat-grid   { grid-template-columns:repeat(4,1fr); gap:8px; }
+          .ar-header-row  { margin-bottom:20px; }
+          .ar-drawer      { width:100vw !important; }
+          .ar-drawer-pad  { padding:16px 18px 40px; }
+          .ar-drawer-hpad { padding:14px 18px 12px; }
+        }
+
+        /* ── ≤ 600px (small phone) ── */
+        @media (max-width:600px) {
+          .ar-stat-grid   { grid-template-columns:repeat(2,1fr); gap:8px; }
+          .ar-toolbar     { flex-wrap:wrap; }
+          .ar-filter-row  { gap:10px; }
+          .ar-hide-sm     { display:none !important; }
+          .ar-review-pad  { padding:12px 14px 16px; }
+        }
+
+        /* ── ≤ 480px (tiny phone) ── */
+        @media (max-width:480px) {
+          .ar-stat-grid   { grid-template-columns:repeat(2,1fr); gap:6px; }
+          .ar-drawer-pad  { padding:12px 14px 40px; }
+          .ar-drawer-hpad { padding:10px 14px 10px; }
+          .ar-meta-grid   { grid-template-columns:1fr; }
+          .ar-pagination  { justify-content:center; }
+          .ar-review-pad  { padding:10px 12px 14px; }
+        }
       `}</style>
 
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: isMobile ? 20 : 28, flexWrap: "wrap", gap: 12 }}>
+      <div className="ar-header-row" style={{}}>
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <div style={{ width: 42, height: 42, borderRadius: 12, background: "linear-gradient(135deg,#6366f1,#8b5cf6)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 18px rgba(99,102,241,0.35)", flexShrink: 0 }}>
             <ClipboardList size={18} color="white" />
@@ -1553,16 +1636,16 @@ export default function AllReports() {
           </div>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          {!isMobile && (
-            <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}
-              style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 16px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.55)", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
-              <Download size={13} />Export
-            </motion.button>
-          )}
+
           <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}
             onClick={() => setShowMatcher(true)}
             style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 16px", borderRadius: 10, border: "1px solid rgba(99,102,241,0.35)", background: "rgba(99,102,241,0.1)", fontSize: 13, fontWeight: 600, color: "#a5b4fc", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
-            <Link2 size={13} />{!isMobile && "Match Reports"}
+            <Link2 size={13} /><span className="ar-hide-sm" style={{ marginLeft: 4 }}>Match Reports</span>
+          </motion.button>
+          <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}
+            className="ar-hide-sm"
+            style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 16px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.55)", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
+            <Download size={13} />Export
           </motion.button>
           <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}
             onClick={() => { fetchReports({ ordering }); fetchStats() }}
@@ -1571,7 +1654,7 @@ export default function AllReports() {
             <motion.div animate={loadingList ? { rotate: 360 } : {}} transition={{ duration: 1, repeat: loadingList ? Infinity : 0, ease: "linear" }}>
               <RefreshCw size={13} />
             </motion.div>
-            {!isMobile && "Refresh"}
+<span className="ar-hide-sm" style={{ marginLeft: 4 }}>Refresh</span>
           </motion.button>
         </div>
       </div>
@@ -1579,7 +1662,7 @@ export default function AllReports() {
       {/* Stat cards */}
       {stats && (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-          style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2,1fr)" : "repeat(4,1fr)", gap: 10, marginBottom: 22 }}>
+          className="ar-stat-grid" style={{}}>
           {[
             { label: "Total",      value: stats.total,          color: "#818cf8", glow: "rgba(129,140,248,0.2)" },
             { label: "Open",       value: stats.open,           color: "#34d399", glow: "rgba(52,211,153,0.2)"  },
@@ -1603,7 +1686,7 @@ export default function AllReports() {
       {/* Toolbar — search + filter (AllUsers-style) */}
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
         style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, padding: "12px 14px", marginBottom: 16 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "nowrap" }}>
+        <div className="ar-toolbar" style={{ gap: 8 }}>
           {/* Search */}
           <div style={{ position: "relative", flex: 1, minWidth: 0 }}>
             <Search size={13} color="#6b7280" style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
@@ -1616,7 +1699,7 @@ export default function AllReports() {
               onBlur={e  => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.09)"; e.currentTarget.style.boxShadow = "none" }}
             />
             {searchRaw && (
-              <button onClick={() => setSearchRaw("")}
+              <button onClick={() => { setSearchRaw(""); setPage(1) }}
                 style={{ position: "absolute", right: 9, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", display: "flex", padding: 0 }}>
                 <X size={12} color="#6b7280" />
               </button>
@@ -1651,15 +1734,15 @@ export default function AllReports() {
         <AnimatePresence>
           {showFilters && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.18 }} style={{ overflow: "hidden" }}>
-              <div style={{ paddingTop: 12, marginTop: 12, borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", gap: 16, flexWrap: "wrap", alignItems: "flex-end" }}>
+              <div className="ar-filter-row" style={{}}>
 
                 {/* Status */}
                 <div>
                   <div style={{ fontSize: 10, fontWeight: 700, color: "#4b5563", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 7 }}>Status</div>
                   <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
                     {STATUS_FILTERS.map(f => (
-                      <button key={f.value} onClick={() => setStatusFilter(f.value)}
-                        style={{ padding: "4px 11px", borderRadius: 7, border: statusFilter === f.value ? "1px solid rgba(99,102,241,0.4)" : "1px solid rgba(255,255,255,0.1)", background: statusFilter === f.value ? "rgba(99,102,241,0.15)" : "rgba(255,255,255,0.04)", fontSize: 11, fontWeight: 500, color: statusFilter === f.value ? "#a5b4fc" : "rgba(255,255,255,0.5)", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
+                      <button key={f.value} onClick={() => { setStatusFilter(f.value); setPage(1) }}
+                        style={{ padding: "4px 10px", borderRadius: 7, border: statusFilter === f.value ? "1px solid rgba(99,102,241,0.4)" : "1px solid rgba(255,255,255,0.1)", background: statusFilter === f.value ? "rgba(99,102,241,0.15)" : "rgba(255,255,255,0.04)", fontSize: 11, fontWeight: 500, color: statusFilter === f.value ? "#a5b4fc" : "rgba(255,255,255,0.5)", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
                         {f.label}
                       </button>
                     ))}
@@ -1671,7 +1754,7 @@ export default function AllReports() {
                   <div style={{ fontSize: 10, fontWeight: 700, color: "#4b5563", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 7 }}>Type</div>
                   <div style={{ display: "flex", gap: 5 }}>
                     {([["all","All"],["lost","Lost"],["found","Found"]] as [string,string][]).map(([val, label]) => (
-                      <button key={val} onClick={() => setTypeFilter(val as any)}
+                      <button key={val} onClick={() => { setTypeFilter(val as any); setPage(1) }}
                         style={{
                           padding: "4px 11px", borderRadius: 7, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", fontSize: 11, fontWeight: 500,
                           border: typeFilter === val ? (val === "found" ? "1px solid rgba(16,185,129,0.4)" : "1px solid rgba(99,102,241,0.4)") : "1px solid rgba(255,255,255,0.1)",
@@ -1687,7 +1770,7 @@ export default function AllReports() {
                 {/* Category */}
                 <div style={{ flex: "1 1 160px" }}>
                   <div style={{ fontSize: 10, fontWeight: 700, color: "#4b5563", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 7 }}>Category</div>
-                  <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value as any)}
+                  <select value={categoryFilter} onChange={e => { setCategoryFilter(e.target.value as any); setPage(1) }}
                     style={{ width: "100%", padding: "6px 10px", borderRadius: 7, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "#c4c9e2", fontSize: 11, fontFamily: "'DM Sans',sans-serif", outline: "none", cursor: "pointer" }}>
                     <option value="all">All Categories</option>
                     {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
@@ -1697,7 +1780,7 @@ export default function AllReports() {
                 {/* Sort */}
                 <div style={{ flex: "1 1 140px" }}>
                   <div style={{ fontSize: 10, fontWeight: 700, color: "#4b5563", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 7 }}>Sort By</div>
-                  <select value={ordering} onChange={e => setOrdering(e.target.value as any)}
+                  <select value={ordering} onChange={e => { setOrdering(e.target.value as any); setPage(1) }}
                     style={{ width: "100%", padding: "6px 10px", borderRadius: 7, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "#c4c9e2", fontSize: 11, fontFamily: "'DM Sans',sans-serif", outline: "none", cursor: "pointer" }}>
                     <option value="-date_reported">Newest First</option>
                     <option value="date_reported">Oldest First</option>
@@ -1708,14 +1791,14 @@ export default function AllReports() {
                 </div>
 
                 {/* Urgent toggle */}
-                <motion.button whileTap={{ scale: 0.97 }} onClick={() => setUrgentFilter(p => !p)}
+                <motion.button whileTap={{ scale: 0.97 }} onClick={() => { setUrgentFilter(p => !p); setPage(1) }}
                   style={{ display: "flex", alignItems: "center", gap: 7, padding: "6px 12px", borderRadius: 7, border: `1px solid ${urgentFilter ? "rgba(239,68,68,0.4)" : "rgba(255,255,255,0.1)"}`, background: urgentFilter ? "rgba(239,68,68,0.1)" : "rgba(255,255,255,0.04)", fontSize: 11, fontWeight: 600, color: urgentFilter ? "#f87171" : "rgba(255,255,255,0.5)", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
                   <Zap size={11} color={urgentFilter ? "#f87171" : "#4b5563"} />Urgent Only
                 </motion.button>
 
                 {/* Reset */}
                 {activeFilterCount > 0 && (
-                  <button onClick={() => { setStatusFilter("all"); setTypeFilter("all"); setCategoryFilter("all"); setUrgentFilter(false); setOrdering("-date_reported") }}
+                  <button onClick={() => { setStatusFilter("all"); setTypeFilter("all"); setCategoryFilter("all"); setUrgentFilter(false); setOrdering("-date_reported"); setPage(1) }}
                     style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 7, border: "1px solid rgba(239,68,68,0.25)", background: "rgba(239,68,68,0.07)", fontSize: 11, color: "#f87171", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
                     <X size={10} />Reset
                   </button>
@@ -1760,7 +1843,7 @@ export default function AllReports() {
         <MatchedPairsView reports={reports} onOpen={id => setOpenId(id)} isMobile={isMobile} />
       ) : isMobile ? (
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {reports.map((r, i) => (
+          {paginatedReports.map((r, i) => (
             <ReportCard key={r.id} report={r} index={i} onClick={() => setOpenId(r.id)} onAiMatch={e => { e.stopPropagation(); setOpenId(r.id); setAutoRunAiId(r.id) }} />
           ))}
         </div>
@@ -1771,15 +1854,37 @@ export default function AllReports() {
               <div key={i} style={{ fontSize: 10, fontWeight: 700, color: "#374151", textTransform: "uppercase", letterSpacing: 1 }}>{h}</div>
             ))}
           </div>
-          {reports.map((r, i) => (
+          {paginatedReports.map((r, i) => (
             <ReportRow key={r.id} report={r} index={i} onClick={() => setOpenId(r.id)} onAiMatch={e => { e.stopPropagation(); setOpenId(r.id); setAutoRunAiId(r.id) }} />
           ))}
         </div>
       )}
 
+      {/* Pagination */}
       {!loadingList && reports.length > 0 && (
-        <div style={{ textAlign: "center", marginTop: 16, fontSize: 11, color: "#374151" }}>
-          Showing {reports.length} of {reportCount} report{reportCount !== 1 ? "s" : ""}
+        <div className="ar-pagination" style={{ marginTop: 14, padding: "12px 16px", borderRadius: 14, border: "1px solid rgba(255,255,255,0.07)", background: "rgba(255,255,255,0.01)" }}>
+          <div style={{ fontSize: 12, color: "#4b5563" }}>
+            {reports.length === 0 ? "0" : `${(page - 1) * PER_PAGE + 1}–${Math.min(page * PER_PAGE, reports.length)}`} of {reports.length} report{reports.length !== 1 ? "s" : ""}
+            {reportCount > reports.length && <span style={{ color: "#374151" }}> (filtered from {reportCount} total)</span>}
+          </div>
+          {totalPages > 1 && (
+            <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
+              <PageBtn label="←" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} />
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter(p => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
+                .reduce<(number | "…")[]>((acc, p, i, arr) => {
+                  if (i > 0 && (p as number) - (arr[i - 1] as number) > 1) acc.push("…")
+                  acc.push(p)
+                  return acc
+                }, [])
+                .map((p, i) => p === "…"
+                  ? <span key={`e${i}`} style={{ fontSize: 13, color: "#374151", display: "flex", alignItems: "center", padding: "0 4px" }}>…</span>
+                  : <PageBtn key={p} label={String(p)} onClick={() => setPage(p as number)} active={p === page} />
+                )
+              }
+              <PageBtn label="→" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} />
+            </div>
+          )}
         </div>
       )}
 
