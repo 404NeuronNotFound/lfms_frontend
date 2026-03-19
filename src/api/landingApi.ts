@@ -1,6 +1,6 @@
 import type { PublicStatsResponse } from "@/types/landingTypes"
 
-const BASE = "https://lfms-backend.onrender.com/api"
+const BASE = "https://lfms-backend.onrender.com/api/"
 
 export async function fetchPublicStats(): Promise<PublicStatsResponse> {
   const res = await fetch(`${BASE}/public/stats/`)
