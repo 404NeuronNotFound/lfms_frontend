@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom"
 import { motion, easeOut } from "framer-motion"
 import { useUserDashboardStore } from "@/store/userDashboardStore"
 import {
-  Tag, PackageSearch, CheckCircle, Clock, Bell,
+  Tag, PackageSearch, Clock, Bell,
   ClipboardList, ArrowRight, RefreshCw, AlertTriangle,
-  Loader2, MapPin, Calendar, FileText, ShieldCheck,
+  Loader2, MapPin, FileText, ShieldCheck,
   Zap, TrendingUp, Star,
 } from "lucide-react"
 import type {

@@ -3,10 +3,10 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useAuthStore } from "@/store/authStore"
 import { useSettingsStore } from "@/store/settingsStore"
 import {
-  User, Mail, Lock, Eye, EyeOff, Bell, Shield,
+  User, Mail, Lock, Eye, EyeOff, Shield,
   Trash2, Camera, CheckCircle, AlertTriangle,
   MapPin, Phone, FileText, ChevronRight, Save,
-  Smartphone, Globe, Key, LogOut, X, Upload, ShieldOff,
+  Smartphone, Globe, Key, X, Upload, ShieldOff,
 } from "lucide-react"
 import DeactivateModal from "@/components/DeactivateModal"
 
@@ -84,24 +84,24 @@ function FieldInput({
 }
 
 
-function Toggle({ checked, onChange, label, desc }: { checked: boolean; onChange: (v: boolean) => void; label: string; desc?: string }) {
-  return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 0", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-      <div>
-        <div style={{ fontSize: 14, fontWeight: 500, color: "#e2e8f0" }}>{label}</div>
-        {desc && <div style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>{desc}</div>}
-      </div>
-      <button onClick={() => onChange(!checked)} style={{
-        width: 44, height: 24, borderRadius: 12, border: "none", cursor: "pointer", flexShrink: 0,
-        background: checked ? "linear-gradient(135deg,#6366f1,#8b5cf6)" : "rgba(255,255,255,0.1)",
-        position: "relative", transition: "all 0.25s ease",
-        boxShadow: checked ? "0 0 12px rgba(99,102,241,0.4)" : "none",
-      }}>
-        <div style={{ position: "absolute", top: 3, width: 18, height: 18, borderRadius: "50%", background: "white", transition: "left 0.25s ease", left: checked ? 23 : 3, boxShadow: "0 1px 4px rgba(0,0,0,0.3)" }} />
-      </button>
-    </div>
-  )
-}
+// function Toggle({ checked, onChange, label, desc }: { checked: boolean; onChange: (v: boolean) => void; label: string; desc?: string }) {
+//   return (
+//     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 0", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+//       <div>
+//         <div style={{ fontSize: 14, fontWeight: 500, color: "#e2e8f0" }}>{label}</div>
+//         {desc && <div style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>{desc}</div>}
+//       </div>
+//       <button onClick={() => onChange(!checked)} style={{
+//         width: 44, height: 24, borderRadius: 12, border: "none", cursor: "pointer", flexShrink: 0,
+//         background: checked ? "linear-gradient(135deg,#6366f1,#8b5cf6)" : "rgba(255,255,255,0.1)",
+//         position: "relative", transition: "all 0.25s ease",
+//         boxShadow: checked ? "0 0 12px rgba(99,102,241,0.4)" : "none",
+//       }}>
+//         <div style={{ position: "absolute", top: 3, width: 18, height: 18, borderRadius: "50%", background: "white", transition: "left 0.25s ease", left: checked ? 23 : 3, boxShadow: "0 1px 4px rgba(0,0,0,0.3)" }} />
+//       </button>
+//     </div>
+//   )
+// }
 
 function SaveButton({ loading, label = "Save Changes", onClick, disabled: extDisabled }: { loading: boolean; label?: string; onClick: () => void; disabled?: boolean }) {
   const isDisabled = loading || extDisabled
@@ -136,11 +136,11 @@ function SaveButton({ loading, label = "Save Changes", onClick, disabled: extDis
 
 // ── MAIN PAGE ─────────────────────────────────────────────────────────────
 export default function SettingsPage() {
-  const { user, role, logout } = useAuthStore()
+  const { user, role } = useAuthStore()
   const {
-    profile, loadingProfile, savingProfile, savingPassword, savingNotifs, deletingAccount,
+    profile, loadingProfile, savingProfile, savingPassword, deletingAccount,
     profileError, passwordError, notifsError, successMessage,
-    fetchProfile, saveProfile, savePassword, saveNotifPrefs, removeAccount, clearMessages,
+    fetchProfile, saveProfile, savePassword, removeAccount, clearMessages,
   } = useSettingsStore()
 
   const [activeTab,   setActiveTab]   = useState("profile")
@@ -171,7 +171,7 @@ export default function SettingsPage() {
   const [passLocalErr, setPassLocalErr] = useState("")
 
   // ── Notifications ──
-  const [notifs, setNotifs] = useState({
+  const [, setNotifs] = useState({
     notifications_email: true,
     notifications_push:  true,
     notifications_sms:   false,
@@ -393,7 +393,7 @@ export default function SettingsPage() {
     } catch {}
   }
 
-  const handleSaveNotifs    = async () => { await saveNotifPrefs(notifs) }
+  // const handleSaveNotifs    = async () => { await saveNotifPrefs(notifs) }
   const handleDeleteAccount = async () => {
     setDeleteError("")
     if (!deletePassword) return setDeleteError("Password is required to delete your account")

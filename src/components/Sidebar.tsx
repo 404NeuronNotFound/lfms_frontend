@@ -8,8 +8,8 @@ import { useSettingsStore } from "@/store/settingsStore"
 import { useNotificationStore } from "@/store/notificationStore"
 import {
   Search, LayoutDashboard, PackageSearch, PackagePlus, Bell,
-  ClipboardList, Users, BarChart3, Settings, ShieldCheck, LogOut,
-  ChevronRight, Menu, X, Tag, MapPin, CheckCircle, MessageSquare,
+  ClipboardList, Users, Settings, ShieldCheck, LogOut,
+  ChevronRight, Menu, X, MapPin, CheckCircle,
   FileText,
 } from "lucide-react"
 import LogoutModal from "@/components/LogoutModal"

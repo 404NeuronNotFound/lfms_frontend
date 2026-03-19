@@ -9,7 +9,7 @@ import {
   Sparkles, Phone, Mail, Image, DollarSign, ShieldCheck,
   User, MessageSquare, Trash2, Check, Ban, Filter, Download,
   Link2, Unlink, Activity, Cpu, ChevronDown,
-  Brain, BarChart2, ThumbsDown, ThumbsUp,
+  Brain,
 } from "lucide-react"
 import { useAdminReportStore } from "@/store/adminReportStore"
 import type {
@@ -1508,7 +1508,7 @@ export default function AllReports() {
   const isMobile = useIsMobile(768)
   const {
     reports, reportCount, loadingList, listError,
-    stats, loadingStats,
+    stats, 
     fetchReports, fetchStats,
     removeReport, deleting, deleteError, clearErrors,
   } = useAdminReportStore()

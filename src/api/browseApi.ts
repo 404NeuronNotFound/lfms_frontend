@@ -1,4 +1,3 @@
-import { authFetch } from "@/api/authApi"
 import type { BrowseFilters, BrowseResponse, FoundItemDetail } from "@/types/browseTypes"
 
 const BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000/api"

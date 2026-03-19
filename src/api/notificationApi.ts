@@ -1,5 +1,5 @@
 import { authFetch } from "@/api/authApi"
-import type { Notification, NotificationListResponse } from "@/types/reportTypes"
+import type { NotificationListResponse } from "@/types/reportTypes"
 
 const BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000/api"
 

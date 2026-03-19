@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useCallback } from "react"
+import React, { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   Link2, X, Search, MapPin, Calendar, Tag, Package,
   Zap, Hash, Layers, FileText, Flag, TrendingUp, Sparkles,
-  CheckCircle, AlertTriangle, RefreshCw, ArrowRight, Unlink,
+  CheckCircle, AlertTriangle, RefreshCw, ArrowRight,
 } from "lucide-react"
-import { adminGetReportsByType, adminManualMatch, adminUnmatch } from "@/api/adminReportApi"
+import { adminGetReportsByType, adminManualMatch } from "@/api/adminReportApi"
 import type { AdminReportListItem } from "@/types/reportTypes"
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -192,7 +192,6 @@ export default function MatchManager({ preselectedReport, onClose, onMatched }: 
   )
   const [phase,   setPhase]   = useState<"idle" | "matching" | "success" | "error">("idle")
   const [error,   setError]   = useState("")
-  const [confirm, setConfirm] = useState(false)
 
   const canMatch = !!lostReport && !!foundReport && phase === "idle"
 

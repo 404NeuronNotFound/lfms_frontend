@@ -4,8 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import {
   Search, ShieldCheck, BellRing, MapPin, Tag, ArrowRight,
-  CheckCircle, Star, Menu, X, ChevronDown, Zap, Globe, Lock,
-  TrendingUp, RefreshCw,
+  CheckCircle, Star, Menu, X, ChevronDown, Zap, Globe, Lock, RefreshCw,
 } from "lucide-react"
 import { useLandingStore } from "@/store/landingStore"
 import type { PublicActivityItem } from "@/types/landingTypes"
@@ -61,17 +60,17 @@ const TICKER_ITEMS = [
   "✦ Bisaya & Tagalog supported", "✦ Free for students",
 ]
 
-const CATEGORY_ICONS: Record<string, React.ElementType> = {
-  "Electronics":    Zap,
-  "Wallets & Bags": Tag,
-  "Keys":           Tag,
-  "Clothing":       Tag,
-  "Jewelry":        Star,
-  "Documents":      Tag,
-  "Pets":           Tag,
-  "Sports":         TrendingUp,
-  "Other":          Tag,
-}
+// const CATEGORY_ICONS: Record<string, React.ElementType> = {
+//   "Electronics":    Zap,
+//   "Wallets & Bags": Tag,
+//   "Keys":           Tag,
+//   "Clothing":       Tag,
+//   "Jewelry":        Star,
+//   "Documents":      Tag,
+//   "Pets":           Tag,
+//   "Sports":         TrendingUp,
+//   "Other":          Tag,
+// }
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  HELPERS
@@ -120,7 +119,7 @@ function FAQItem({ faq, i }: { faq: { q: string; a: string }; i: number }) {
 }
 
 function ActivityItem({ item, index }: { item: PublicActivityItem; index: number }) {
-  const CatIcon = CATEGORY_ICONS[item.category] ?? Tag
+  //const CatIcon = CATEGORY_ICONS[item.category] ?? Tag
   const isLost = item.type === "Lost"
   return (
     <motion.div

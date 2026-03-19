@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   ClipboardCheck, Clock, CheckCircle2, XCircle, AlertTriangle,
   ChevronRight, X, Tag, Zap, Package, Hash, Layers, FileText,
   Flag, TrendingUp, Sparkles, RefreshCw, MessageSquare,
-  Calendar, ShieldCheck, Inbox, Info, ChevronDown, Download,
+  Calendar, ShieldCheck, Inbox, Info, Download,
 } from "lucide-react"
 import { useClaimStore } from "@/store/claimStore"
 import type { ClaimRequest, ClaimStatus, ReportCategory } from "@/types/reportTypes"
@@ -36,17 +36,17 @@ const CLAIM_STATUS_CFG: Record<"all" | ClaimStatus, {
   rejected: { label: "Rejected",    color: "#f87171", bg: "rgba(248,113,113,0.08)", border: "rgba(248,113,113,0.2)", icon: XCircle        },
 }
 
-const CATEGORY_ICONS: Record<ReportCategory, React.ElementType> = {
-  "Electronics":    Zap,
-  "Wallets & Bags": Package,
-  "Keys":           Hash,
-  "Clothing":       Layers,
-  "Jewelry":        Sparkles,
-  "Documents":      FileText,
-  "Pets":           Flag,
-  "Sports":         TrendingUp,
-  "Other":          Tag,
-}
+// const CATEGORY_ICONS: Record<ReportCategory, React.ElementType> = {
+//   "Electronics":    Zap,
+//   "Wallets & Bags": Package,
+//   "Keys":           Hash,
+//   "Clothing":       Layers,
+//   "Jewelry":        Sparkles,
+//   "Documents":      FileText,
+//   "Pets":           Flag,
+//   "Sports":         TrendingUp,
+//   "Other":          Tag,
+// }
 
 const FILTER_TABS: { value: "all" | ClaimStatus }[] = [
   { value: "all"      },

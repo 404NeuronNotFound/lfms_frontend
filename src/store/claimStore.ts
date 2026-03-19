@@ -29,7 +29,7 @@ interface ClaimState {
 //  STORE
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const useClaimStore = create<ClaimState>((set, get) => ({
+export const useClaimStore = create<ClaimState>((set,) => ({
   claims:  [],
   total:   0,
   loading: false,

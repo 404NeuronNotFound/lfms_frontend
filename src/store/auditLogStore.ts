@@ -5,8 +5,6 @@ import type {
   AuditActionChoice,
   AuditLogFilters,
   AuditLogStats,
-  AuditAction,
-  AuditActorType,
 } from "@/types/auditLogTypes"
 
 interface AuditLogState {

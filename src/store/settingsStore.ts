@@ -52,7 +52,7 @@ interface SettingsState {
   clearMessages: () => void
 }
 
-export const useSettingsStore = create<SettingsState>((set, get) => ({
+export const useSettingsStore = create<SettingsState>((set,) => ({
   profile:         null,
   loadingProfile:  false,
   savingProfile:   false,

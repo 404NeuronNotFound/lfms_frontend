@@ -58,7 +58,7 @@ interface ReportState {
 // ─────────────────────────────────────────────────────────────────────────────
 //  STORE
 // ─────────────────────────────────────────────────────────────────────────────
-export const useReportStore = create<ReportState>((set, get) => ({
+export const useReportStore = create<ReportState>((set,) => ({
   reports:       [],
   reportCount:   0,
   loadingList:   false,

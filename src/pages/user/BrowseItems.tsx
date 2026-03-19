@@ -8,7 +8,7 @@ import {
 } from "lucide-react"
 import { useBrowseStore } from "@/store/browseStore"
 import ClaimButton from "@/components/ClaimButton"
-import type { FoundItemListItem, FoundItemDetail, ClaimStatusValue } from "@/types/browseTypes"
+import type { FoundItemListItem, ClaimStatusValue } from "@/types/browseTypes"
 import type { ReportCategory } from "@/types/reportTypes"
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -12,7 +12,6 @@ import type {
   AdminLostReportListItem,
   AdminReportStats,
   AdminUpdateReportPayload,
-  ReportStatus,
 } from "@/types/reportTypes"
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -61,7 +60,7 @@ interface AdminReportState {
 // ─────────────────────────────────────────────────────────────────────────────
 //  STORE
 // ─────────────────────────────────────────────────────────────────────────────
-export const useAdminReportStore = create<AdminReportState>((set, get) => ({
+export const useAdminReportStore = create<AdminReportState>((set,) => ({
   reports:       [],
   reportCount:   0,
   loadingList:   false,
