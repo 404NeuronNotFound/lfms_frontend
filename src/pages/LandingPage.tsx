@@ -682,7 +682,7 @@ export default function LandingPage() {
           {/* Footer bottom */}
           <div style={{ borderTop:"1px solid rgba(255,255,255,0.06)", paddingTop:18, display:"flex", flexDirection:isMobile?"column":"row", gap:isMobile?5:0, justifyContent:"space-between", alignItems:"center", textAlign:"center" }}>
             <span style={{ fontSize:12, color:"rgba(255,255,255,0.25)" }}>© 2025 Findify. All rights reserved.</span>
-            <span style={{ fontSize:12, color:"rgba(255,255,255,0.25)" }}>Made with ♥ for campuses everywhere</span>
+            <span style={{ fontSize:12, color:"rgba(255,255,255,0.25)" }}>Made by Keybeen♥ for campuses everywhere</span>
           </div>
         </div>
       </footer>
