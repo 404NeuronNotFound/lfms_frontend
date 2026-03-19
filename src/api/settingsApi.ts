@@ -12,7 +12,7 @@ import type {
   ReactivateAccountResponse,
 } from "@/types/settingsTypes"
 
-const BASE = "http://localhost:8000/api"
+const BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000/api"
 
 const JSON_HEADERS = { "Content-Type": "application/json" }
 
