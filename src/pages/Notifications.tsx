@@ -322,6 +322,23 @@ export default function Notifications() {
 
           {/* Buttons */}
           <div style={{ display: "flex", gap: 8 }}>
+            {unreadCount > 0 && (
+              <motion.button
+                whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}
+                onClick={markAllRead}
+                style={{
+                  display: "flex", alignItems: "center", gap: 7,
+                  padding: "9px 16px", borderRadius: 10,
+                  border: "1px solid rgba(99,102,241,0.25)",
+                  background: "rgba(99,102,241,0.08)",
+                  fontSize: 13, fontWeight: 600, color: "#818cf8",
+                  cursor: "pointer", fontFamily: "'DM Sans',sans-serif",
+                }}
+              >
+                <CheckCheck size={13} />
+                {!isMobile && "Mark all read"}
+              </motion.button>
+            )}
             {!isMobile && (
               <motion.button
                 whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}
@@ -340,23 +357,7 @@ export default function Notifications() {
                 <Download size={13} />Export
               </motion.button>
             )}
-            {unreadCount > 0 && (
-              <motion.button
-                whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}
-                onClick={markAllRead}
-                style={{
-                  display: "flex", alignItems: "center", gap: 7,
-                  padding: "9px 16px", borderRadius: 10,
-                  border: "1px solid rgba(99,102,241,0.25)",
-                  background: "rgba(99,102,241,0.08)",
-                  fontSize: 13, fontWeight: 600, color: "#818cf8",
-                  cursor: "pointer", fontFamily: "'DM Sans',sans-serif",
-                }}
-              >
-                <CheckCheck size={13} />
-                {!isMobile && "Mark all read"}
-              </motion.button>
-            )}
+            
             <motion.button
               whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}
               onClick={fetchNotifications}
