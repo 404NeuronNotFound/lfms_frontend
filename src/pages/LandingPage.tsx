@@ -346,7 +346,7 @@ export default function LandingPage() {
                 <button className="btn-primary" onClick={() => navigate("/register")} style={{ padding:"13px 24px", borderRadius:12, fontSize:15, fontWeight:600, color:"white", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}>
                   Report Lost Item <ArrowRight size={15}/>
                 </button>
-                <button className="btn-secondary" onClick={() => navigate("/browse")} style={{ padding:"13px 24px", borderRadius:12, fontSize:15, fontWeight:500, color:"white", cursor:"pointer", textAlign:"center" }}>
+                <button className="btn-secondary" onClick={() => navigate("/register")} style={{ padding:"13px 24px", borderRadius:12, fontSize:15, fontWeight:500, color:"white", cursor:"pointer", textAlign:"center" }}>
                   Browse Found Items
                 </button>
               </motion.div>
@@ -419,7 +419,7 @@ export default function LandingPage() {
 
                 {/* Search bar */}
                 <div style={{ marginTop:12, padding:"8px 11px", borderRadius:10, background:"rgba(99,102,241,0.08)", border:"1px solid rgba(99,102,241,0.2)", display:"flex", alignItems:"center", gap:7, cursor:"pointer" }}
-                  onClick={() => navigate("/browse")}>
+                  onClick={() => navigate("/register")}>
                   <Search size={12} color="#818cf8"/>
                   <span style={{ fontSize:12, color:"rgba(255,255,255,0.3)" }}>
                     Search {stats ? fmt(stats.total_reports) : "…"} active reports...
@@ -486,7 +486,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── HOW IT WORKS ── */}
-      <section id="how-it-works" style={{ background:"rgba(255,255,255,0.015)", borderTop:"1px solid rgba(255,255,255,0.05)", borderBottom:"1px solid rgba(255,255,255,0.05)", position:"relative", zIndex:1 }}>
+      <section id="how-it works" style={{ background:"rgba(44, 37, 37, 0.01)", borderTop:"1px solid rgba(255,255,255,0.05)", borderBottom:"1px solid rgba(255,255,255,0.05)", position:"relative", zIndex:1 }}>
         <div style={{ maxWidth:1200, margin:"0 auto", padding:isMobile?"72px 16px":"120px 24px" }}>
           <motion.div initial={{ opacity:0, y:30 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }}
             style={{ textAlign:"center", marginBottom:isMobile?40:80 }}>
