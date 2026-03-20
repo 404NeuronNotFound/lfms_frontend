@@ -620,8 +620,41 @@ export default function LandingPage() {
               </div>
               <p style={{ fontSize:13, color:"rgba(255,255,255,0.35)", lineHeight:1.7, maxWidth:240 }}>Intelligent lost & found management built for modern campuses.</p>
               <div style={{ display:"flex", gap:8, marginTop:18 }}>
-                {["Twitter","LinkedIn","GitHub"].map(s => (
-                  <div key={s} style={{ padding:"5px 12px", borderRadius:7, background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.08)", fontSize:12, color:"rgba(255,255,255,0.4)", cursor:"pointer" }}>{s}</div>
+                {[
+                  { name: "Instagram", url: "https://instagram.com/kxvxn.js" },
+                  { name: "TikTok", url: "https://www.tiktok.com/@keybcuts.codes" },
+                  { name: "GitHub", url: "https://github.com/404NeuronNotFound" },
+                ].map(s => (
+                  <a
+                    key={s.name}
+                    href={s.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ textDecoration: "none" }}
+                  >
+                    <div
+                      style={{
+                        padding:"5px 12px",
+                        borderRadius:7,
+                        background:"rgba(255,255,255,0.05)",
+                        border:"1px solid rgba(255,255,255,0.08)",
+                        fontSize:12,
+                        color:"rgba(255,255,255,0.4)",
+                        cursor:"pointer",
+                        transition:"all 0.2s ease"
+                      }}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.color = "white";
+                        e.currentTarget.style.border = "1px solid rgba(255,255,255,0.3)";
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.color = "rgba(255,255,255,0.4)";
+                        e.currentTarget.style.border = "1px solid rgba(255,255,255,0.08)";
+                      }}
+                    >
+                      {s.name}
+                    </div>
+                  </a>
                 ))}
               </div>
             </div>
@@ -655,8 +688,32 @@ export default function LandingPage() {
               </div>
               <p style={{ fontSize:13, color:"rgba(255,255,255,0.35)", lineHeight:1.6 }}>Intelligent lost & found management for modern campuses.</p>
               <div style={{ display:"flex", gap:8, marginTop:14 }}>
-                {["Twitter","LinkedIn","GitHub"].map(s => (
-                  <div key={s} style={{ padding:"5px 11px", borderRadius:7, background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.08)", fontSize:12, color:"rgba(255,255,255,0.4)", cursor:"pointer" }}>{s}</div>
+                {[
+                  { name: "Instagram", url: "https://instagram.com/kxvxn.js" },
+                  { name: "TikTok", url: "https://tiktok.com/@keybcuts.codes" },
+                  { name: "GitHub", url: "https://github.com/404NeuronNotFound" },
+                ].map(s => (
+                  <a 
+                    key={s.name}
+                    href={s.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ textDecoration: "none" }}
+                  >
+                    <div
+                      style={{
+                        padding:"5px 11px",
+                        borderRadius:7,
+                        background:"rgba(255,255,255,0.05)",
+                        border:"1px solid rgba(255,255,255,0.08)",
+                        fontSize:12,
+                        color:"rgba(255,255,255,0.4)",
+                        cursor:"pointer"
+                      }}
+                    >
+                      {s.name}
+                    </div>
+                  </a>
                 ))}
               </div>
             </div>
@@ -681,7 +738,7 @@ export default function LandingPage() {
 
           {/* Footer bottom */}
           <div style={{ borderTop:"1px solid rgba(255,255,255,0.06)", paddingTop:18, display:"flex", flexDirection:isMobile?"column":"row", gap:isMobile?5:0, justifyContent:"space-between", alignItems:"center", textAlign:"center" }}>
-            <span style={{ fontSize:12, color:"rgba(255,255,255,0.25)" }}>© 2025 Findify. All rights reserved.</span>
+            <span style={{ fontSize:12, color:"rgba(255,255,255,0.25)" }}>© 2026 Findify. All rights reserved.</span>
             <span style={{ fontSize:12, color:"rgba(255,255,255,0.25)" }}>Made by Keybeen♥ for campuses everywhere</span>
           </div>
         </div>
